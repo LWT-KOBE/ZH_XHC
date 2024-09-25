@@ -14,6 +14,14 @@ u8 Uart1_Tx[UART1_TX_LEN]={0};
 u16 Uart1_Rx_length = 0;
 u16 Uart1_Tx_length = 0;
 
+u8 TrainWarning = 0;//bit0--前车位置丢失  bit1--电机1异常 bit2--电机2异常  bit3--电机3异常  bit4--电机4异常
+										//bit5--U型开关异常  bit6--接近开关异常或NFC读卡器异常   bit7--系统故障待定
+
+u8 SensorWarning = 0;
+
+u16 SensorWarningDelay1,SensorWarningDelay2,SensorWarningDelay3,SensorWarningDelay4,\
+	 SensorWarningDelay5,SensorWarningDelay6,SensorWarningDelay7,SensorWarningDelay8;
+
 u8 TrainDircition = 0;//0--前进   1--后退
 u8 TrainState = 0;//火车状态  
 u8 StepState = 0;//1跟随  2进站减速  4出站速度
@@ -92,7 +100,7 @@ void IO_Init(void)
 	GPIO_InitTypeDef  GPIO_InitStructure;
 
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);//使能GPIOD时钟
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB | RCC_AHB1Periph_GPIOC, ENABLE);//使能GPIOE时钟
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB | RCC_AHB1Periph_GPIOC | RCC_AHB1Periph_GPIOA, ENABLE);//使能GPIOE时钟
   RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_DMA1, ENABLE);	
 	
 	//GPIOD2初始化设置
@@ -107,39 +115,122 @@ void IO_Init(void)
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100MHz
 	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;//上拉
 	GPIO_Init(GPIOB, &GPIO_InitStructure);//初始化GPIO
-
+	
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12;//LD1
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;//
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100MHz
 	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;//上拉
 	GPIO_Init(GPIOC, &GPIO_InitStructure);//初始化GPIO	
 	
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6;//LD2
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_15;//LD2
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;//
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100MHz
 	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;//上拉
-	GPIO_Init(GPIOC, &GPIO_InitStructure);//初始化GPIO		
+	GPIO_Init(GPIOA, &GPIO_InitStructure);//初始化GPIO		
 	
-	
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7;//MF
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;//
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100MHz
-	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;//上拉
-	GPIO_Init(GPIOC, &GPIO_InitStructure);//初始化GPIO		
 
 
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_14 | GPIO_Pin_15;//车头编号
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;//
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100MHz
-	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;//上拉
-	GPIO_Init(GPIOB, &GPIO_InitStructure);//初始化GPIO
-	
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8 | GPIO_Pin_9;//车头编号
+
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_14;//ST1B
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;//
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100MHz
 	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;//上拉
 	GPIO_Init(GPIOC, &GPIO_InitStructure);//初始化GPIO	
 	
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_13;//ST2B
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;//
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100MHz
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;//上拉
+	GPIO_Init(GPIOC, &GPIO_InitStructure);//初始化GPIO		
+	
+	
+	
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;//LD1B
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;//
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100MHz
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;//上拉
+	GPIO_Init(GPIOC, &GPIO_InitStructure);//初始化GPIO	
+	
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_15;//LD2B
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;//
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100MHz
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;//上拉
+	GPIO_Init(GPIOC, &GPIO_InitStructure);//初始化GPIO		
+
+	
+	
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_3;//MF
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;//
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100MHz
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;//上拉
+	GPIO_Init(GPIOC, &GPIO_InitStructure);//初始化GPIO	
+
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2;//MFB
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;//
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100MHz
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;//上拉
+	GPIO_Init(GPIOC, &GPIO_InitStructure);//初始化GPIO	
+
+
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12;//SW2
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;//
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100MHz
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;//上拉
+	GPIO_Init(GPIOB, &GPIO_InitStructure);//初始化GPIO	
+	
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;//SW1
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;//
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100MHz
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;//上拉
+	GPIO_Init(GPIOA, &GPIO_InitStructure);//初始化GPIO		
+
+
+
+//	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_14 | GPIO_Pin_15;//车头编号
+//	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;//
+//	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100MHz
+//	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;//上拉
+//	GPIO_Init(GPIOB, &GPIO_InitStructure);//初始化GPIO
+//	
+//	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8 | GPIO_Pin_9;//车头编号
+//	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;//
+//	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100MHz
+//	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;//上拉
+//	GPIO_Init(GPIOC, &GPIO_InitStructure);//初始化GPIO	
+
+
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_11;//车头灯
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;//
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100MHz
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN;//下拉
+	GPIO_Init(GPIOA, &GPIO_InitStructure);//初始化GPIO	
+
+
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5;//A_B_MOTOREN
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;//
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100MHz
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN;//下拉
+	GPIO_Init(GPIOA, &GPIO_InitStructure);//初始化GPIO	
+
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4;//DIRA
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;//
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100MHz
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN;//下拉
+	GPIO_Init(GPIOC, &GPIO_InitStructure);//初始化GPIO	
+	
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5;//DIRB
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;//
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100MHz
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN;//下拉
+	GPIO_Init(GPIOC, &GPIO_InitStructure);//初始化GPIO	
+
+	MOTOR_ENA_B = 0;
+	MBSpeed = 0;
+
 	
 }
 
@@ -159,6 +250,8 @@ void TrainBusinessLogic (void)
 			if(CheckSumAPP2 == Uart1_Rx[Uart1_Rx_length-2])
 			{					
 			//	if(TrainState == ST0)
+				WPS = 0;//写保护关闭
+				delay_ms(1);
 				{
 					CaseNum = Uart1_Rx[4]<<8 |Uart1_Rx[5];
 					EEPROM_Write_u16(0,CaseNum);//2
@@ -168,12 +261,12 @@ void TrainBusinessLogic (void)
 					EEPROM_Write_Byte(2, Pocket4);// 
 					delay_ms(5);
 					
-	//				if(Uart1_Rx[11] == TrainHeadNum || Uart1_Rx[11] ==0xff)//
-	//				{
-	//					TrainBasketMaxNum = Uart1_Rx[16];//
-	//					EEPROM_Write_Byte(3,TrainBasketMaxNum);
-	//					delay_ms(5);
-	//				}
+//					if(Uart1_Rx[11] == TrainHeadNum || Uart1_Rx[11] ==0xff)//
+					{
+						TrainBasketMaxNum = Uart1_Rx[8];//
+						EEPROM_Write_Byte(3,TrainBasketMaxNum);
+						delay_ms(5);
+					}
 					
 					TrainMode = Uart1_Rx[10];
 					EEPROM_Write_Byte(4,TrainMode);
@@ -232,6 +325,7 @@ void TrainBusinessLogic (void)
 					delay_ms(5);	
 
 					ConfigrationFlag = 1; //设置标志位
+					WPS = 1;
 				}
 				
 			}
@@ -240,7 +334,7 @@ void TrainBusinessLogic (void)
 	
 		
 	
-		if(Uart1_Rx[3] == TrainHeadNum && TrainMode ==1)//自动扫码模式APP下发地址 
+		if(Uart1_Rx[3] == TrainHeadNum && TrainMode ==1 && TrainState != 1)//自动扫码模式APP下发地址 
 		{	
 			if(Uart1_Rx[1] == 0x05 && Uart1_Rx[Uart1_Rx_length-1] == 0xdf)
 			{
@@ -256,17 +350,23 @@ void TrainBusinessLogic (void)
 					{
 						if(BasketError[b] ==0)//车厢有故障不接收下发地址
 						{
-							AppSendAddr[b] = ((b+1)<<16) | (Uart1_Rx[4+2*b]<<8) | (Uart1_Rx[5+2*b]);
-				//			if((AppSendAddr[Uart1_Rx[4] -1] & 0xffff) <= CaseNum)
+							
+							if((Uart1_Rx[4+2*b]<<8 | Uart1_Rx[5+2*b]) >0 && (Uart1_Rx[4+2*b]<<8 | Uart1_Rx[5+2*b]) < CaseNum)
 							{
 								APPSendADDRACKFlag =1;
 								HeadSendBasketFlag &= ~0x03;
 								HeadSendBasketFlag |= 0x01;						
-								if((Uart1_Rx[4+2*b]<<8 | Uart1_Rx[5+2*b]) !=0)
-								{					
-									APPSendADDRFlag |= 1 << b;															
-								}				
-							}								
+								APPSendADDRFlag |= 1 << b;	
+								AppSendAddr[b] = ((b+1)<<16) | (Uart1_Rx[4+2*b]<<8) | (Uart1_Rx[5+2*b]);
+							}	
+							else if((Uart1_Rx[4+2*b]<<8 | Uart1_Rx[5+2*b]) > CaseNum)
+							{
+								APPSendADDRACKFlag =1;
+								HeadSendBasketFlag &= ~0x03;
+								HeadSendBasketFlag |= 0x01;						
+								APPSendADDRFlag |= 1 << b;								
+								AppSendAddr[b] = ((b+1)<<16) | (CaseNum - 1);
+							}
 						}
 					}
 				}					
@@ -385,7 +485,15 @@ void TrainBusinessLogic (void)
 				RecycleBasket = Uart1_Rx[4];//回收车厢号
 				RecycleBasketFlag = 1;
 				CanSendOutStationFlag = 5;//1停止落格 2停止落格解除 3屏蔽车厢  4屏蔽车厢解除  5去回收框
+			}	
+
+			else if(Uart1_Rx[1] == 0x0D)//APP下发指定位置停车指令
+			{
+				ChargePosition = Uart1_Rx[4]<<8 | Uart1_Rx[5];//停车位置
+				ChargeFlag = 1;
 			}			
+			
+			
 		}
 		
 		if(Uart1_Rx[1] == 0x03)//收到自检指令
@@ -564,8 +672,13 @@ u8 WIFIdataSend(u8 *Databuff,u8 DataLen)
 	
 		for(u8 i=0;i<DataLen;i++)
 		{
-			while((USART1->SR&0X40)==0);//循环发送,直到发送完毕
-			USART_SendData(USART1,Databuff[i]);          
+			while((USART2->SR&0X40)==0);//循环发送,直到发送完毕
+			USART_SendData(USART2,Databuff[i]);  
+	//		if(HeartDelayCount >= 5)
+			{
+				while((UART4->SR&0X40)==0);//循环发送,直到发送完毕
+				USART_SendData(UART4,Databuff[i]);
+			}				
 		}	
 	return 1;
 }
@@ -669,24 +782,32 @@ void HeartToApp (u8 Type,u8 DataLen)//心跳包
 ////////////////V////////////////////	
 	
 	SendDataBuf3[0+3] = TrainHeadNum;
-	SendDataBuf3[1+3] = FrontCarPositionPokec <<8;
-	SendDataBuf3[2+3] = FrontCarPositionPokec;
+	SendDataBuf3[1+3] = PocketCount <<8;
+	SendDataBuf3[2+3] = PocketCount;
 //	SendDataBuf3[1+3] = CarPositionPocket <<8;
 //	SendDataBuf3[2+3] = CarPositionPocket;	
 	
-	SendDataBuf3[3+3] = gPowerValueFloat*2+5;
+	SendDataBuf3[3+3] = gPowerValueFloat*2;
 	SendDataBuf3[4+3] = gSpeedR;
-	SendDataBuf3[5+3] = 0x88;
+	SendDataBuf3[5+3] = TrainWarning;  //
 	SendDataBuf3[6+3] = TrainState;
-	SendDataBuf3[7+3] = TrainMode;//版本号
-	SendDataBuf3[8+3] = Pocket_A_Count;//版本号		
+	SendDataBuf3[7+3] = ((TrainVersion&0xf00)>>4) | (NFCMode << 2) | (DriveMode<<1) | (TrainMode);//版本号+模式
+	SendDataBuf3[8+3] = TrainVersion;//版本号		
 	SendDataBuf3[9+3] = TrainBasketMaxNum;
 	
 	for(u8 i=0;i<TrainBasketMaxNum;i++)
   {
 		SendDataBuf3[10+3+i] = (BasketError[i]);
   }	
-
+////////////////////////////////////	
+	SendDataBuf3[11+3+TrainBasketMaxNum] = gSpeedRA;
+	SendDataBuf3[12+3+TrainBasketMaxNum] = gSpeedRB;
+	SendDataBuf3[13+3+TrainBasketMaxNum] = Pocket_A_Count;
+	SendDataBuf3[14+3+TrainBasketMaxNum] = PIDA.PWM*0.03;
+	SendDataBuf3[15+3+TrainBasketMaxNum] = ChargePosition;
+	
+////////////////////////////////////	
+	
   for(u8 i=0;i<DataLen;i++)
   {		
     CheckSum ^= SendDataBuf3[i+3]; 
@@ -892,7 +1013,7 @@ void TrainFollowTrain(void)
 	{
 		if(MF_SW == 0)//漫反射触发立即刹车
 		{
-	//		MOTOR_ENA_B = 0;
+			MOTOR_ENA_B = 0;
 			MoterBrakeFlag = 1;//刹车
 			MBSpeed = 0;
 		}
@@ -902,31 +1023,31 @@ void TrainFollowTrain(void)
 			{
 				MoterBrakeFlag = 1;//刹车
 				MBSpeed = 0;	
-		//		MOTOR_ENA_B = 0;
+				MOTOR_ENA_B = 0;
 			}		
 			else if(CarDistance>3 && CarDistance<=5)//  滑行
 			{
-				MBSpeed = 50;
+				MBSpeed = 70;
 				BreakStopFlag = 0;
-	//			MOTOR_ENA_B = 1;				
+				MOTOR_ENA_B = 1;				
 			}
 			else if(CarDistance>5 && CarDistance<=8)//  低速
 			{
-				MBSpeed = 90;
+				MBSpeed = 120;
 				BreakStopFlag = 0;
-		//		MOTOR_ENA_B = 1;				
+				MOTOR_ENA_B = 1;				
 			}		
 			else if(CarDistance>8 && CarDistance<=11)//  中速
 			{
-				MBSpeed = 120;
+				MBSpeed = 150;
 				BreakStopFlag = 0;
-		//		MOTOR_ENA_B = 1;				
+				MOTOR_ENA_B = 1;				
 			}				
 			else if(CarDistance>11)//
 			{
 				MBSpeed = 180;
 				BreakStopFlag = 0;
-		//		MOTOR_ENA_B = 1;				
+				MOTOR_ENA_B = 1;				
 			}	
 		}			
 	}
@@ -934,7 +1055,7 @@ void TrainFollowTrain(void)
 	{
 		if(CarScranFlag == 0x01)//网关紧急停车
 		{
-	//		MOTOR_ENA_B = 0;
+			MOTOR_ENA_B = 0;
 			MBSpeed = 0;
 			MoterBrakeFlag = 1;//急刹
 		}	
@@ -942,7 +1063,7 @@ void TrainFollowTrain(void)
 		{
 			if(MF_SW == 0)//漫反射触发立即刹车
 			{
-	//			MOTOR_ENA_B = 0;
+				MOTOR_ENA_B = 0;
 				MoterBrakeFlag = 1;//刹车
 				MBSpeed = 0;
 			}
@@ -950,7 +1071,7 @@ void TrainFollowTrain(void)
 			{
 				MBSpeed = 120;
 				BreakStopFlag = 0;
-		//		MOTOR_ENA_B = 1;
+				MOTOR_ENA_B = 1;
 			}	
 		}			
 	}
@@ -991,7 +1112,10 @@ void ReadE2promData(void)//读取设置参数
 {
 	CaseNum = EEPROM_Read_u16(0);
 	Pocket4 = EEPROM_Read_Byte(2);
-//	TrainBasketMaxNum = EEPROM_Read_Byte(3);
+	if(TrainHeadNum !=1)
+		TrainBasketMaxNum = EEPROM_Read_Byte(3);
+	else
+		TrainBasketMaxNum = 12;
 	TrainMode = EEPROM_Read_Byte(4);
 	HigSpeed = EEPROM_Read_Byte(5);
 	MidSpeed = EEPROM_Read_Byte(6);
@@ -1006,6 +1130,7 @@ void ReadE2promData(void)//读取设置参数
 	RecycleCaseNum = EEPROM_Read_u16(15);
 	MFContralZS = EEPROM_Read_Byte(17);
 	MFContralDS = EEPROM_Read_Byte(18);
+	TrainHeadNum = EEPROM_Read_Byte(19);
 }
 
 
@@ -1164,7 +1289,7 @@ void CanSendDataTask (void)
 ////////////////////////////////////////	
 	
 }
-void Can_USART_Data_Send_Task (void)
+void USART_Data_Send_Task (void)
 {
 
 	u8 i = 0;
@@ -1178,7 +1303,7 @@ void Can_USART_Data_Send_Task (void)
 			{
 				if(BasketApplicationFlag)//只要有一个车厢还在申请状态就持续向下申请
 				{
-					for(i=0;i<TrainBasketMaxNum;i++)//TrainBasketMaxNum
+					for(i=0;i<21;i++)//TrainBasketMaxNum
 					{
 						if((BasketApplicationFlag >> i) == 0x00000001)
 						{
@@ -1258,10 +1383,10 @@ void Can_USART_Data_Send_Task (void)
 		else if(SendUDPDataDelay100ms ==4)
 		{
 			HeartDelayCount++;     
-			if(HeartDelayCount >=2)
+			if(HeartDelayCount >=6)
 			{
 				HeartDelayCount = 0; 
-				HeartToApp(9,10+TrainBasketMaxNum);//心跳	
+				HeartToApp(9,10+TrainBasketMaxNum+5);//心跳	
 			}
 		}		
 		else if(SendUDPDataDelay100ms >4)
@@ -1281,8 +1406,8 @@ void TrainContral (void)
 			StepState = 4;
 			CarGoGoFlag = 0;			
 		}
-//		CarPositionPocket = Pocket_A_Count + CageNumber; //挡片数+接近挡片
-		for(u8 a = 0;a<TrainBasketMaxNum;a++)//车厢在线封装在车厢故障
+//	CarPositionPocket = Pocket_A_Count + CageNumber; //挡片数+接近挡片
+		for(u8 a = 0;a<21;a++)//车厢在线封装在车厢故障
 		{
 			if(((BasketLifeFlag >> a) & 0x01) == 0x00)
 			{
@@ -1298,15 +1423,25 @@ void TrainContral (void)
 		if(CarScranFlag == 1 && gSpeedR ==0)
 			TrainState = ST0;		
 	
-		if(TrainState == ST6 || TrainState == ST1)
+		if(TrainState == ST1 && InStationCount == 0)
 		{
-			if(CageNumber == CaseNum - MFContralDS)//进站提前减速
-			{	
+			StepState = 7;
+		}
+		
+//		if(CageNumber == CaseNum - MFContralDS)//进站提前减速
+		if(CageNumber >= CaseNum - MFContralDS)//进站提前减速  0911
+		{	
+			if(TrainState == ST6 || TrainState == ST1)
+			{
 				PocketStep = 0;
 				InStationLSFlag = 1;
 				StepState = 2;
 			}
-		}			
+		}
+		if(TrainState == ST1 && InStationCount == 1 && Pocket_A_Count == 1)
+		{
+			StepState = 6;	
+		}
 //////////////////////////////////跟随////////////////////////////////////	
 		//if(CageNumber >= MFContralZS && CageNumber < (CaseNum - MFContralDS) && TrainState != ST1)
 		
@@ -1314,18 +1449,14 @@ void TrainContral (void)
 		{
 			StepState =1;	
 		}
-//		if(MF_SW == 0 || CarScranFlag == 0x01)//漫反射触发立即刹车  0807
-//		{
-//			MBSpeed = 0;
-//			MoterBrakeFlag = 1;//刹车
-//		}		
+	
 
 		{
 			if(StepState ==1)//跟随速度
 			{
 				if(CarScranFlag == 0x01)//网关紧急停车
 				{
-//					MOTOR_ENA_B = 0;
+					MOTOR_ENA_B = 0;
 					MBSpeed = 0;
 			//		Motor_SpeedA_Goal.target = 0;
 					MoterBrakeFlag = 1;//急刹
@@ -1334,19 +1465,25 @@ void TrainContral (void)
 				{
 					if(MF_SW == 0)//漫反射触发立即刹车
 					{
-//						MOTOR_ENA_B = 0;
+						MOTOR_ENA_B = 0;
 						MoterBrakeFlag = 1;//刹车
 						MBSpeed = 0;
 					}	
 					else
-						TrainFollowTrain(); //跟随防撞	
+					{
+						if(ChargeFlag == 0)
+							TrainFollowTrain(); //跟随防撞	
+						else
+							ChargeStop();//指定位置充电
+						
+					}
 				}
 			}
 			else if(StepState == 2)//进站速度
 			{
 				if(CarScranFlag == 0x01)//网关紧急停车
 				{
-//					MOTOR_ENA_B = 0;
+					MOTOR_ENA_B = 0;
 					MBSpeed = 0;
 					MoterBrakeFlag = 1;//急刹
 				}
@@ -1354,7 +1491,7 @@ void TrainContral (void)
 				{
 					if(MF_SW == 0)//漫反射触发立即刹车
 					{
-//						MOTOR_ENA_B = 0;
+						MOTOR_ENA_B = 0;
 						MBSpeed = 0;
 						MoterBrakeFlag = 1;//刹车
 					}
@@ -1362,7 +1499,7 @@ void TrainContral (void)
 					{
 						MBSpeed = 76;
 						BreakStopFlag = 0;
-//						MOTOR_ENA_B = 1;						
+						MOTOR_ENA_B = 1;						
 					}
 				}					
 			}
@@ -1370,7 +1507,7 @@ void TrainContral (void)
 			{
 				if(CarScranFlag == 0x01)//网关紧急停车
 				{
-//					MOTOR_ENA_B = 0;
+					MOTOR_ENA_B = 0;
 					MBSpeed = 0;
 					MoterBrakeFlag = 1;//急刹
 				}
@@ -1378,7 +1515,7 @@ void TrainContral (void)
 				{
 					if(MF_SW == 0)//漫反射触发立即刹车
 					{
-//						MOTOR_ENA_B = 0;
+						MOTOR_ENA_B = 0;
 						MBSpeed = 0;
 						MoterBrakeFlag = 1;//刹车
 					}
@@ -1386,64 +1523,62 @@ void TrainContral (void)
 					{
 						MBSpeed = 120;
 						BreakStopFlag = 0;
-//						MOTOR_ENA_B = 1;						
+						MOTOR_ENA_B = 1;						
+					}
+				}			
+			}	
+
+			else if(StepState == 6 )//自检进站减速
+			{
+				if(CarScranFlag == 0x01)//网关紧急停车
+				{
+					MOTOR_ENA_B = 0;
+					MBSpeed = 0;
+					MoterBrakeFlag = 1;//急刹
+				}
+				else				
+				{
+					if(MF_SW == 0)//漫反射触发立即刹车
+					{
+						MOTOR_ENA_B = 0;
+						MBSpeed = 0;
+						MoterBrakeFlag = 1;//刹车
+					}
+					else//低速行驶	
+					{
+						MBSpeed = 150;
+						BreakStopFlag = 0;
+						MOTOR_ENA_B = 1;						
 					}
 				}			
 			}
-			
-//			else if(StepState == 6)//装载交互
-//			{
-//				if(CarScranFlag == 0x01)//网关紧急停车
-//				{
-//					MBSpeed = 0;
-//					MoterBrakeFlag = 1;//急刹
-//				}
-//				else				
-//				{
-//					if(MF_SW == 0)//漫反射触发立即刹车
-//					{
-//						MBSpeed = 0;
-//						MoterBrakeFlag = 1;//刹车
-//					}
-//					else//低速行驶	
-//					{
-//						MBSpeed = 90;
-//						BreakStopFlag = 0;
-//						MOTOR_ENA_B = 1;						
-//					}
-//				}			
-//			}			
-	
-		}
-		if(TrainState == ST1 && InStationCount == 0)
-		{
-			if(CarScranFlag == 0x01)//网关紧急停车
+			else if(StepState == 7)//自检第一圈速度
 			{
-				MBSpeed = 0;
-				MoterBrakeFlag = 1;//急刹
-//				MOTOR_ENA_B = 0;
-			}
-			else			
-			{							
-				if(MF_SW == 0)//漫反射触发立即刹车
+				if(CarScranFlag == 0x01)//网关紧急停车
 				{
 					MBSpeed = 0;
-					MoterBrakeFlag = 1;//刹车
-//					MOTOR_ENA_B = 0;
+					MoterBrakeFlag = 1;//急刹
+					MOTOR_ENA_B = 0;
 				}
-				else
-				{
-					MBSpeed = 120;
-					BreakStopFlag = 0;
-//					MOTOR_ENA_B = 1;	
+				else			
+				{							
+					if(MF_SW == 0)//漫反射触发立即刹车
+					{
+						MBSpeed = 0;
+						MoterBrakeFlag = 1;//刹车
+						MOTOR_ENA_B = 0;
+					}
+					else
+					{
+						MBSpeed = 120;
+						BreakStopFlag = 0;
+						MOTOR_ENA_B = 1;	
+					}
 				}
 			}				
+	
 		}
-		else if(TrainState == ST1 && InStationCount >= 1)
-		{
-			StepState =1;	
-		}
-		
+
 //////////////////////////////////跟随////////////////////////////////////
 		
 		if(PocketCount == 1)//0807
@@ -1465,13 +1600,13 @@ void TrainContral (void)
 					NewPocket_A_Count = Pocket_A_Count;
 					if(OldPocket_A_Count != Pocket_A_Count)
 					{				
-						for(u8 ii = 0;ii < TrainBasketMaxNum;ii++) 
+						for(u8 ii = 0;ii < 21;ii++) 
             {
 							if(Pocket_A_Count == (Pocket4 + 1 + ii))
 							{
 								if(BasketError[ii] == 0)	
 								{
-//									MOTOR_ENA_B = 0;
+									MOTOR_ENA_B = 0;
 									StepState = 5;
 									MBSpeed = 0;
 									MoterBrakeFlag = 1;//刹车
@@ -1493,7 +1628,7 @@ void TrainContral (void)
 							{
 								if(CarScranFlag == 0x01)//网关紧急停车
 								{
-//									MOTOR_ENA_B = 0;
+									MOTOR_ENA_B = 0;
 									MBSpeed = 0;
 									MoterBrakeFlag = 1;//急刹
 								}
@@ -1501,7 +1636,7 @@ void TrainContral (void)
 								{
 									MBSpeed = 90;
 									BreakStopFlag = 0;
-//									MOTOR_ENA_B = 1;
+									MOTOR_ENA_B = 1;
 								}														
 							}
 							if(IntermediateVariable2 >=10)
@@ -1515,24 +1650,14 @@ void TrainContral (void)
 	//////////////////挡片模式////////////////////////				
 		}
 
-		
-		
-		if(TrainState == ST1)
+
+		if(Pocket_A_Count == ApplicationtTavel && TrainState == ST1)//出站
 		{
-			if(Pocket_A_Count == ApplicationtTavel)//出站
-			{
-				InStationFlag = 0;
-				StionStop = 0;//清除进站标志
-//				APPSendADDRFlag = 0;
-			}		
-			else if(Pocket_A_Count == ForceTravel1)//强制出站
-			{
-//				APPSendADDRFlag = 0;
-			}		
-		}
-		
-		
-		else if(TrainState == ST2 || TrainState == ST3 || TrainState == ST4|| TrainState == ST5)
+			InStationFlag = 0;
+			StionStop = 0;//清除进站标志
+		}		
+
+		if(TrainState == ST2 || TrainState == ST3 || TrainState == ST4|| TrainState == ST5)
 		{	
 			if(Pocket_A_Count == ApplicationtTavel)//出站
 			{
@@ -1541,7 +1666,7 @@ void TrainContral (void)
 			}	
 			if(PocketStep == 1)
 			{
-//				MOTOR_ENA_B = 0;
+				MOTOR_ENA_B = 0;
 				StepState = 3;
 				MBSpeed = 0;
 				MoterBrakeFlag = 1;//急刹
@@ -1563,31 +1688,24 @@ void TrainContral (void)
 				//0809
 			}				
 		}
-					
-			Motor_SpeedA_Goal.target = MBSpeed/100.0f;//速度转递
+		#if DriveMode //新驱动板
+			//读取速度
+			//第一个车轮
+			gSpeedRA = -OdReceivedData.vel_estimate[0].float_temp *22.0;
 		
-			//Motor_SpeedA_Goal.target = Incremental_PID(OdReceivedData.vel_estimate[1].float_temp,Motor_SpeedB_Goal.target);
-			//分段控制速度 因为odrive端只有Kp,和设定的目标值有静态差距，故在发送时增大发送值来达到真正的期望值
-			if(fabs(Motor_SpeedA_Goal.target) <=0.5f){
-				OdriveData.SetVel[0].float_temp = -Motor_SpeedA_Goal.target / (M_PI * 0.07f) * 1.275f;
-				OdriveData.SetVel[1].float_temp = Motor_SpeedA_Goal.target / (M_PI * 0.07f) * 1.275f;
-			}
+			//第二个车轮
+			gSpeedRB =  OdReceivedData.vel_estimate[1].float_temp *22.0;
+		
+			//第三个车轮
+			gSpeedRC = -OdReceivedData.vel_estimate[2].float_temp *22.0;
+		
+			//第四个车轮
+			gSpeedRD =  OdReceivedData.vel_estimate[3].float_temp *22.0;
+		
+			gSpeedR = max_of_four(gSpeedRA,gSpeedRB,gSpeedRC,gSpeedRD);
 			
-			else if(fabs(Motor_SpeedA_Goal.target) <=1 && fabs(Motor_SpeedA_Goal.target) > 0.5f){
-				OdriveData.SetVel[0].float_temp = -Motor_SpeedA_Goal.target / (M_PI * 0.07f) * 1.2f;
-				OdriveData.SetVel[1].float_temp = Motor_SpeedA_Goal.target / (M_PI * 0.07f) * 1.2f;
-			}
-			
-			if(fabs(Motor_SpeedA_Goal.target) <=1.5f && fabs(Motor_SpeedA_Goal.target) > 1.0f){
-				OdriveData.SetVel[0].float_temp = -Motor_SpeedA_Goal.target / (M_PI * 0.07f) * 1.125f;
-				OdriveData.SetVel[1].float_temp = Motor_SpeedA_Goal.target / (M_PI * 0.07f) * 1.125f;
-			}
-			
-			else if(fabs(Motor_SpeedA_Goal.target) >1.5f){
-				OdriveData.SetVel[0].float_temp = -Motor_SpeedA_Goal.target / (M_PI * 0.07f) * 1.095f;
-				OdriveData.SetVel[1].float_temp = Motor_SpeedA_Goal.target / (M_PI * 0.07f) * 1.095f;
-			}	
-			
+		
+		#endif
 //		if(TrainState == ST5 || TrainState == ST6)
 //		{
 //			if(CageNumber == OutStationQuicken)//出站加速

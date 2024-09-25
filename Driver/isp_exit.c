@@ -9,14 +9,14 @@ void EXTI0_IRQHandler(void){
 	}
 }
 
-void EXTI1_IRQHandler(void){   
-	if(EXTI_GetITStatus(EXTI_Line1) != RESET){    
-		EXTI_ClearFlag(EXTI_Line1);          
-		EXTI_ClearITPendingBit(EXTI_Line1);
-		Angle_Goal.target ++;
-		/*********以下是自定义部分**********/
-	}
-}
+//void EXTI1_IRQHandler(void){   
+//	if(EXTI_GetITStatus(EXTI_Line1) != RESET){    
+//		EXTI_ClearFlag(EXTI_Line1);          
+//		EXTI_ClearITPendingBit(EXTI_Line1);
+//		Angle_Goal.target ++;
+//		/*********以下是自定义部分**********/
+//	}
+//}
 
 void EXTI2_IRQHandler(void){   
 	if(EXTI_GetITStatus(EXTI_Line2) != RESET){    
@@ -50,18 +50,18 @@ void EXTI4_IRQHandler(void){
 	
 }
 
-void EXTI9_5_IRQHandler(void) {
-	if(EXTI_GetITStatus(EXTI_Line6) != RESET){
-		//delay_ms(10);
-		EXTI_ClearFlag(EXTI_Line6);          
-		EXTI_ClearITPendingBit(EXTI_Line6);
-		//Angle_Goal.target++;
-		
-		
-		/*********以下是自定义部分**********/
-	}
-    
-}
+//void EXTI9_5_IRQHandler(void) {
+//	if(EXTI_GetITStatus(EXTI_Line6) != RESET){
+//		//delay_ms(10);
+//		EXTI_ClearFlag(EXTI_Line6);          
+//		EXTI_ClearITPendingBit(EXTI_Line6);
+//		//Angle_Goal.target++;
+//		
+//		
+//		/*********以下是自定义部分**********/
+//	}
+//    
+//}
 
 void EXTI15_10_IRQHandler(void) {
 	

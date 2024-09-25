@@ -1,5 +1,5 @@
 #include "cigan.h" 
-
+#include "app.h"
 
 void cigan_Init(void)
 {    	 
@@ -31,26 +31,65 @@ void cigan_Init(void)
 void EXTI_Configuration(void)
 {
         //配置外部中断
-        EXTI_InitTypeDef EXTI_InitStructure;
-        NVIC_InitTypeDef NVIC_InitStructure;
+		EXTI_InitTypeDef EXTI_InitStructure;
+		NVIC_InitTypeDef NVIC_InitStructure;
         
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE); //使能SYSCFG时钟
 
-    // 配置中断源为GPIOD的Pin2
-    SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOD, EXTI_PinSource0);
-
-    
-    EXTI_InitStructure.EXTI_Line = EXTI_Line2; //选择外部中断线路2
+    // 配置中断源为GPIOA的Pin6
+    SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOA, EXTI_PinSource6);//speedA
+    EXTI_InitStructure.EXTI_Line = EXTI_Line6; //选择外部中断线路2
     EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt; //设置为中断模式
-    EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Falling; //设置触发方式为下降沿触发
+    EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising_Falling; //设置触发方式为下降沿触发
     EXTI_InitStructure.EXTI_LineCmd = ENABLE; //使能外部中断线路
     EXTI_Init(&EXTI_InitStructure);
+	
+    // 配置中断源为GPIOA的Pin6
+    SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOA, EXTI_PinSource1);//speedB
+    EXTI_InitStructure.EXTI_Line = EXTI_Line1; //选择外部中断线路2
+    EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt; //设置为中断模式
+    EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising_Falling; //设置触发方式为下降沿触发
+    EXTI_InitStructure.EXTI_LineCmd = ENABLE; //使能外部中断线路
+    EXTI_Init(&EXTI_InitStructure);	
 
+    NVIC_InitStructure.NVIC_IRQChannel = EXTI9_5_IRQn; //选择中断通道为EXTI0_IRQn
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x04; //抢占优先级为0
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x04; //子优先级为1
+    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE; //使能中断通道
+    NVIC_Init(&NVIC_InitStructure);
     
-    NVIC_InitStructure.NVIC_IRQChannel = EXTI2_IRQn; //选择中断通道为EXTI0_IRQn
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x00; //抢占优先级为0
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x01; //子优先级为1
+    NVIC_InitStructure.NVIC_IRQChannel = EXTI1_IRQn; //选择中断通道为EXTI0_IRQn
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x04; //抢占优先级为0
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x04; //子优先级为1
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE; //使能中断通道
     NVIC_Init(&NVIC_InitStructure);
 }
+
+
+//////外部中断0服务程序 
+void EXTI9_5_IRQHandler(void)
+{
+
+	if(EXTI_GetITStatus(EXTI_Line6)!=RESET)			//标志位被值位（产生中断）SPEEDA
+	{	
+		PulseCntA++;  
+		EXTI_ClearITPendingBit(EXTI_Line6); //清除LINE0上的中断标志位 
+	}
+	
+}
+
+void EXTI1_IRQHandler(void)
+{
+
+	if(EXTI_GetITStatus(EXTI_Line1)!=RESET)			//标志位被值位（产生中断）SPEEDA
+	{	
+		PulseCntB++; 
+		EXTI_ClearITPendingBit(EXTI_Line1); //清除LINE0上的中断标志位 
+	}
+	
+}
+
+
+
+
 

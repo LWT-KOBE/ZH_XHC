@@ -9,6 +9,7 @@
 #define EEPROM_IO															GPIOB
 #define RCC_APBxPeriph_EEPROM_IO							RCC_AHB1Periph_GPIOB
 
+#define WPS		 PAout(8)
 
 #define EEPROM_SLAVE_ADDRESS7    0xA0        //器件地址 写
 #define EEPROM_READ_ADDRESS7     0xA1        //器件地址 读

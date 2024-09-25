@@ -10,29 +10,30 @@ void EEPROM_GPIO_Init(void)
 
 	GPIO_InitStructure.GPIO_Pin = EEPROM_SCL_PIN;			//SCL
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;//
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100MHz
-	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;//上拉
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;//上拉
 	GPIO_Init(EEPROM_IO, &GPIO_InitStructure);//初始化GPIO		
 
 	GPIO_InitStructure.GPIO_Pin = EEPROM_SDA_PIN;			//SDA	OD
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;//
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100MHz
-	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN;//下拉
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;//下拉
 	GPIO_Init(EEPROM_IO, &GPIO_InitStructure);//初始化GPIO			
 	
 	
-//	GPIO_InitStructure.GPIO_Pin = EEPROM_SCL_PIN;			//SCL
-//	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-//	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz; 
-//	GPIO_Init(EEPROM_IO, &GPIO_InitStructure);
-
 	
-//	GPIO_InitStructure.GPIO_Pin = EEPROM_SDA_PIN;			//SDA	OD
-//	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_OD;
-//	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-//	GPIO_Init(EEPROM_IO, &GPIO_InitStructure);
+//写保护	
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8;				//WP PA8
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;//
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100MHz
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;//上拉
+	GPIO_Init(GPIOA, &GPIO_InitStructure);//初始化GPIO		
 
-//	GPIO_InitStructure.GPIO_Pin = EEPROM_WP_PIN;			//WP
+
+//	GPIO_InitStructure.GPIO_Pin = EEPROM_WP_PIN;			//WP 
 //  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
 //  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 //  GPIO_Init(EEPROM_IO, &GPIO_InitStructure);
@@ -43,7 +44,7 @@ void EEPROM_GPIO_Init(void)
 
 void EEPROM_delay(void)
 {
-	u8 i = 150; //这里可以优化速度 ，经测试最低到5还能写入
+	u8 i = 255; //这里可以优化速度 ，经测试最低到5还能写入
 	while(i)
 	{
 		i--;
@@ -54,60 +55,60 @@ bool EEPROM_Start(void)
 {
 	SET_EEPROM_SDA;
 	SET_EEPROM_SCL;
-	EEPROM_delay();
+	delay_us(3);
 	if(!SDA_read)return false; //SDA线为低电平则总线忙,退出
 	RESET_EEPROM_SDA;
-	EEPROM_delay();
+	delay_us(3);
 	if(SDA_read) return false; //SDA线为高电平则总线出错,退出
 	RESET_EEPROM_SDA;
-	EEPROM_delay();
+	delay_us(3);
 	return true;
 }
 
 void EEPROM_Stop(void)
 {
 	RESET_EEPROM_SCL;
-	EEPROM_delay();
+	delay_us(3);
 	RESET_EEPROM_SDA;
-	EEPROM_delay();
+	delay_us(3);
 	SET_EEPROM_SCL;
-	EEPROM_delay();
+	delay_us(3);
 	SET_EEPROM_SDA;
-	EEPROM_delay();
+	delay_us(3);
 }
 
 void EEPROM_Ack(void)
 {
 	RESET_EEPROM_SCL;
-	EEPROM_delay();
+	delay_us(3);
 	RESET_EEPROM_SDA;
-	EEPROM_delay();
+	delay_us(3);
 	SET_EEPROM_SCL;
-	EEPROM_delay();
+	delay_us(3);
 	RESET_EEPROM_SCL;
-	EEPROM_delay();
+	delay_us(3);
 }
 
 void EEPROM_NoAck(void)
 {
 	RESET_EEPROM_SCL;
-	EEPROM_delay();
+	delay_us(3);
 	SET_EEPROM_SDA;
-	EEPROM_delay();
+	delay_us(3);
 	SET_EEPROM_SCL;
-	EEPROM_delay();
+	delay_us(3);
 	RESET_EEPROM_SCL;
-	EEPROM_delay();
+	delay_us(3);
 }
 
 bool EEPROM_WaitAck(void)   //返回为:=1有ACK,=0无ACK
 {
 	RESET_EEPROM_SCL;
-	EEPROM_delay();
+	delay_us(3);
 	SET_EEPROM_SDA;
-	EEPROM_delay();
+	delay_us(3);
 	SET_EEPROM_SCL;
-	EEPROM_delay();
+	delay_us(3);
 	if(SDA_read)
 	{
 		RESET_EEPROM_SCL;
@@ -124,15 +125,16 @@ void EEPROM_SendByte(u8 SendByte) //数据从高位到低位//
 	while(i--)
 	{
 		RESET_EEPROM_SCL;
-		EEPROM_delay();
+		delay_us(3);
+		
 		if(SendByte & 0x80)
 			SET_EEPROM_SDA;
 		else
 			RESET_EEPROM_SDA;
 		SendByte <<= 1;
-		EEPROM_delay();
+		delay_us(3);
 		SET_EEPROM_SCL;
-		EEPROM_delay();
+		delay_us(3);
 	}
 	RESET_EEPROM_SCL;
 }
@@ -147,9 +149,9 @@ u8 EEPROM_ReceiveByte(void)  //数据从高位到低位//
 	{
 		ReceiveByte <<= 1;
 		RESET_EEPROM_SCL;
-		EEPROM_delay();
+		delay_us(3);
 		SET_EEPROM_SCL;
-		EEPROM_delay();
+		delay_us(3);
 		if(SDA_read)
 		{
 			ReceiveByte |= 0x01;

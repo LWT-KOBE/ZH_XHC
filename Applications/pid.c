@@ -1,6 +1,13 @@
 #include "parameter.h"
 #include "pid.h"
 #include "board.h"
+
+Cascade_PIDA  PIDA;             	/* 串级PIDA轮参数结构体 */
+
+float MyPidKp = 15.0f;
+float MyPidKi = 1.501f;
+float MyPidKd = 4.0;
+
 pidStruct_t *pidInit(systemConfigPID_t *PIDConfigData){
 	pidStruct_t *pid;
     
@@ -281,28 +288,45 @@ pwm代表增量输出
 **************************************************************************/
 float Incremental_PID(float reality,float target)
 { 	
-	 static float Bias,Pwm,Last_bias=0,Prev_bias=0,Incremental_KP,Incremental_KI,Incremental_KD;
-     Incremental_KP = 0.5f;
-	 Incremental_KI = 0.5f;
-	 Incremental_KD = 0.00f;
-	 Bias=target-reality;                                   /* 计算偏差 */
+	 static float Bias,Pwm,Last_bias=0,Prev_bias=0,Incremental_KP,Incremental_KI,Incremental_KD,last_dev,this_dev,alpha;
+//   Incremental_KP = 0.00125f;
+//	 Incremental_KI = 0.00125f;
+//	 Incremental_KD = 0.00f;
+	 
+	 //5ms状态下
+	 Incremental_KP = 0.5f;
+	 Incremental_KI = 0.06f;
+	 Incremental_KD = 0.0f;
+	
+//	 Incremental_KP = 0.000125f;
+//	 Incremental_KI = 0.001f;
+//	 Incremental_KD = 0.00f;
+	 
+	 //Bias=target * 4.5f - reality;                                   /* 计算偏差 */
+	 if(target == 0){
+		 Bias = 0;
+		 Last_bias = 0;
+		 Pwm = 0;
+		 Prev_bias = 0;
+	 }
+	 Bias=target - reality;                                   /* 计算偏差 */
+
     
 	 Pwm += (Incremental_KP*(Bias-Last_bias))               /* 比例环节 */
            +(Incremental_KI*Bias)                           /* 积分环节 */
-           +(Incremental_KD*(Bias-2*Last_bias+Prev_bias));  /* 微分环节 */ 
+           +(Incremental_KD*(Bias-2*Last_bias+Prev_bias));  /* 微分环节 */
+	 
+	 //一阶低通滤波微分部分处理
+	//this_dev = Position_KD * (1 - alpha) * (Bias - Last_Bias) + alpha * last_dev;
     
      Prev_bias=Last_bias;                                   /* 保存上上次偏差 */
 	 Last_bias=Bias;	                                    /* 保存上一次偏差 */
 		
-//	 if(fabs(Bias)<0.75){
-//		 Prev_bias = 0;
-//		 Last_bias = 0;
-//		 Pwm = 0;
-//	 }
-    
+    //记录上一个低通微分处理之后的值
+	last_dev = this_dev;
 	//限幅
-	if(Pwm >  2.2f) Pwm =  2.2f;
-	if(Pwm < -2.2f) Pwm = -2.2f;
+	if(Pwm >  3.25f) Pwm =  3.25f;
+	if(Pwm < -3.25f) Pwm = -3.25f;
 	return Pwm;                                            /* 输出结果 */
 }
 
@@ -643,4 +667,58 @@ void PID_CascadeCalc(CascadePID *pid, float outerRef, float outerFdb, float inne
     PID_Calc(&pid->inner, pid->outer.output, innerFdb); //计算内环
     pid->output = pid->inner.output; //内环输出就是串级PID的输出
 }
+
+/**************************************************************************
+函数功能：位置式PID控制器
+入口参数：实际位置，目标位置
+返回  值：电机PWM
+根据位置式离散PID公式
+位置式PID的三个参数: Kp:提高响应速度 Ki:稳态 Kd:抑制震荡
+pwm=Kp*e(k)+Ki*∑e(k)+Kd[e（k）-e(k-1)]
+e(k)代表本次偏差 
+e(k-1)代表上一次的偏差  
+∑e(k)代表e(k)以及之前的偏差的累积和;其中k为1,2,...,k;
+pwm代表输出
+**************************************************************************/
+float Position_PIDA(Cascade_PIDA *PID,float target) 
+{ 
+
+    PIDA.Position_KP 		= MyPidKp;		/*	位置环KP参数	*/
+		PIDA.Position_KI 		= MyPidKi;		/*	位置环KI参数	*/
+		PIDA.Position_KD 		= MyPidKd;		/*	位置环KD参数	*/
+	
+    static float Bias,Pwm,Last_Bias,Integral_bias=0;
+		if(CarDriveFlag == 0)
+		{
+			Bias = 0;target=0;Integral_bias = 0;Last_Bias = 0;Pwm = 0;
+		}
+		
+    Bias=target-gSpeedR;                            /* 计算偏差 */
+    Integral_bias+=Bias;	                        /* 偏差累积 */
+    
+    if(Integral_bias> 7000) Integral_bias = 7000;   /* 积分限幅 */
+    if(Integral_bias<-7000) Integral_bias =-7000;
+    
+    Pwm = (PID->Position_KP *Bias)                        /* 比例环节 */
+         +(PID->Position_KI *Integral_bias)               /* 积分环节 */
+         +(PID->Position_KD *(Bias-Last_Bias));           /* 微分环节 */
+    
+    Last_Bias=Bias;                                 /* 保存上次偏差 */
+	
+		if(Pwm >=  8000) 
+		{
+			Pwm =  8000;
+		}
+		if(Pwm < 0) 								/* 输出限幅 */		
+		{	
+			Pwm = 0;			
+		}
+			
+    return Pwm;                                     /* 输出结果 */
+}
+
+
+
+
+
 

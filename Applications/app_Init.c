@@ -15,22 +15,29 @@ void appInit(void *Parameters){
 
     //监控机初始化
 	//supervisorInit();	
-
+	
+	#if DriveMode //新驱动板
 	OdriveInit();
+	
+	#endif
 	//无线数传初始化
 	//wirelessInit();
 	//控制初始化
+	
+	//CAN1发送任务
 	controlInit();
 	
-	//小火车控制任务初始化
+	//小火车硬件初始化、与上位机通信
 	XHCDataInit();
 	
-	//CAN2控制任务初始化
+	//火车速度控制逻辑
 	CAN2DataInit();
 	
 	
-	//运动控制初始化
-//	balanceInit();
+	#if DriveMode //新驱动板
+	balanceInit();
+	
+	#endif
     //虚拟串口初始化完成标志
 //	usbVCP_Printf("All Init Successfully \r\n");             
 	/*- 在此处结束 ------------------*/

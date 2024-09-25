@@ -11,7 +11,7 @@
 
 #define XHC_Task_PRIORITY 9
 #define XHC_Task_STACK_SIZE 512
-#define XHC_Task_NORMAL_PERIOD 40
+#define XHC_Task_NORMAL_PERIOD 50  //30
 
 
 

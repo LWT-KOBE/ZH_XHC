@@ -922,10 +922,10 @@ void driver_can1_init(CAN_TypeDef* rm_canx,BSP_GPIOSource_TypeDef *rm_canx_rx,BS
 		can1.CAN_FilterInitStructure = CAN2_FilterInitStructure;
 	}
 	//1M波特率
-	BSP_CAN_Mode_Init(&can1,CAN_SJW_1tq,CAN_BS2_5tq,CAN_BS1_9tq,3,CAN_Mode_Normal,Preemption,Sub);
+	//BSP_CAN_Mode_Init(&can1,CAN_SJW_1tq,CAN_BS2_5tq,CAN_BS1_9tq,3,CAN_Mode_Normal,Preemption,Sub);
 	
 	//250K波特率
-	//BSP_CAN_Mode_Init(&can1,CAN_SJW_1tq,CAN_BS2_5tq,CAN_BS1_9tq,12,CAN_Mode_Normal,Preemption,Sub);
+	BSP_CAN_Mode_Init(&can1,CAN_SJW_1tq,CAN_BS2_5tq,CAN_BS1_9tq,12,CAN_Mode_Normal,Preemption,Sub);
 	
 	//125K波特率
 	//BSP_CAN_Mode_Init(&can1,CAN_SJW_1tq,CAN_BS2_5tq,CAN_BS1_9tq,24,CAN_Mode_Normal,Preemption,Sub);
@@ -1291,7 +1291,7 @@ void CAN2_RX0_IRQHandler(void){
 //						case MSG_GET_TEMP:
 //								ODReadTempData(&can1_rx_msg,&OdReceivedData,axis0);
 											
-//						break;								
+						break;								
 					
 						case MSG_GET_MOTOR_ERROR:
 								ODReadMotorErrorData(&can2_rx_msg,&OdReceivedData,axis0);			
@@ -1349,7 +1349,7 @@ void CAN2_RX0_IRQHandler(void){
 //						case MSG_GET_TEMP:
 //								ODReadTempData(&can1_rx_msg,&OdReceivedData,axis1);
 											
-//						break;								
+						break;								
 					
 						case MSG_GET_MOTOR_ERROR:
 								ODReadMotorErrorData(&can2_rx_msg,&OdReceivedData,axis1);			
@@ -1409,7 +1409,7 @@ void CAN2_RX0_IRQHandler(void){
 //						case MSG_GET_TEMP:
 //								ODReadTempData(&can1_rx_msg,&OdReceivedData,axis1);
 											
-//						break;								
+						break;								
 					
 						case MSG_GET_MOTOR_ERROR:
 								ODReadMotorErrorData(&can2_rx_msg,&OdReceivedData,axis2);			
@@ -1467,7 +1467,7 @@ void CAN2_RX0_IRQHandler(void){
 //						case MSG_GET_TEMP:
 //								ODReadTempData(&can1_rx_msg,&OdReceivedData,axis1);
 											
-//						break;								
+						break;								
 					
 						case MSG_GET_MOTOR_ERROR:
 								ODReadMotorErrorData(&can2_rx_msg,&OdReceivedData,axis3);			
@@ -1548,8 +1548,17 @@ void ODRequestedState(void){
 	if(OdriveData.RequestedStateFlag&&(OdriveData.AxisState[axis0] == AXIS_STATE_IDLE)){                                              
        //检测到需要改变状态参数		
 		
+		#if USE_CAN1
 		ODSET_CONTROL_MODE(CAN1,AXIS0_ID,MSG_SET_CONTROLLER_MODES,8,&OdriveData,axis0,&ODSendData);
 		ODSET_CONTROL_MODE(CAN1,AXIS1_ID,MSG_SET_CONTROLLER_MODES,8,&OdriveData,axis1,&ODSendData);
+		#endif
+		
+		#if USE_CAN2
+		ODSET_CONTROL_MODE(CAN2,AXIS0_ID,MSG_SET_CONTROLLER_MODES,8,&OdriveData,axis0,&ODSendData);
+		ODSET_CONTROL_MODE(CAN2,AXIS1_ID,MSG_SET_CONTROLLER_MODES,8,&OdriveData,axis1,&ODSendData);
+		#endif
+		
+		
 
 		digitalLo(&OdriveData.RequestedStateFlag);         
         
@@ -1558,8 +1567,16 @@ void ODRequestedState(void){
 	if(OdriveData.RequestedStateFlag1&&(OdriveData.AxisState[axis0] == AXIS_STATE_IDLE)){                                              
        //检测到需要改变状态参数		
 		
+		#if USE_CAN1
 		ODSET_CONTROL_MODE(CAN1,AXIS2_ID,MSG_SET_CONTROLLER_MODES,8,&OdriveData,axis2,&ODSendData);
 		ODSET_CONTROL_MODE(CAN1,AXIS3_ID,MSG_SET_CONTROLLER_MODES,8,&OdriveData,axis3,&ODSendData);
+		#endif
+		
+		#if USE_CAN2
+		ODSET_CONTROL_MODE(CAN2,AXIS2_ID,MSG_SET_CONTROLLER_MODES,8,&OdriveData,axis2,&ODSendData);
+		ODSET_CONTROL_MODE(CAN2,AXIS3_ID,MSG_SET_CONTROLLER_MODES,8,&OdriveData,axis3,&ODSendData);
+		#endif
+		
 
 		digitalLo(&OdriveData.RequestedStateFlag1);         
         
@@ -1572,17 +1589,31 @@ void ODFlashSave(void){
 	//保存电机1、电机2数据	
 	if(OdriveData.flashSaveFlag){                                              						
 		//config
+		#if USE_CAN1
 		OdriveSend_RemoteCmd(CAN1,AXIS0_ID,MSG_SAVE_CONFIG);
 		OdriveSend_RemoteCmd(CAN1,AXIS1_ID,MSG_SAVE_CONFIG);
-
+		#endif
+		
+		#if USE_CAN2
+		OdriveSend_RemoteCmd(CAN2,AXIS0_ID,MSG_SAVE_CONFIG);
+		OdriveSend_RemoteCmd(CAN2,AXIS1_ID,MSG_SAVE_CONFIG);
+		#endif
+		
 		digitalLo(&OdriveData.flashSaveFlag);         
         
 	} 
 	
 	//保存电机3、电机4数据
-	if(OdriveData.flashSaveFlag1){                                              						
+	if(OdriveData.flashSaveFlag1){
+		#if USE_CAN1
 		OdriveSend_RemoteCmd(CAN1,AXIS2_ID,MSG_SAVE_CONFIG);
 		OdriveSend_RemoteCmd(CAN1,AXIS3_ID,MSG_SAVE_CONFIG);
+		#endif
+		
+		#if USE_CAN2
+		OdriveSend_RemoteCmd(CAN2,AXIS2_ID,MSG_SAVE_CONFIG);
+		OdriveSend_RemoteCmd(CAN2,AXIS3_ID,MSG_SAVE_CONFIG);
+		#endif
 		
 		digitalLo(&OdriveData.flashSaveFlag1);         
         
@@ -1592,16 +1623,30 @@ void ODFlashSave(void){
 //修改速度环增益参数
 void ODChangeVel_gain(void){
 	//修改电机1、电机2的速度环参数	
-	if(OdriveData.Vel_gainFlag){                                              						
+	if(OdriveData.Vel_gainFlag){
+		#if USE_CAN1
 		ODSendVel_gainsData(CAN1,AXIS0_ID,MSG_SET_VEL_GAINS,8,&OdriveData,axis0,&ODSendData);
 		ODSendVel_gainsData(CAN1,AXIS1_ID,MSG_SET_VEL_GAINS,8,&OdriveData,axis1,&ODSendData);
+		#endif
+		
+		#if USE_CAN2
+		ODSendVel_gainsData(CAN2,AXIS0_ID,MSG_SET_VEL_GAINS,8,&OdriveData,axis0,&ODSendData);
+		ODSendVel_gainsData(CAN2,AXIS1_ID,MSG_SET_VEL_GAINS,8,&OdriveData,axis1,&ODSendData);
+		#endif
+		
 		digitalLo(&OdriveData.Vel_gainFlag);         
 	}
 	//修改电机3、电机4的速度环参数
-	if(OdriveData.Vel_gainFlag1){                                              								
+	if(OdriveData.Vel_gainFlag1){
+		#if USE_CAN1
 		ODSendVel_gainsData(CAN1,AXIS2_ID,MSG_SET_VEL_GAINS,8,&OdriveData,axis2,&ODSendData);
 		ODSendVel_gainsData(CAN1,AXIS3_ID,MSG_SET_VEL_GAINS,8,&OdriveData,axis3,&ODSendData);
+		#endif
 		
+		#if USE_CAN2
+		ODSendVel_gainsData(CAN2,AXIS2_ID,MSG_SET_VEL_GAINS,8,&OdriveData,axis2,&ODSendData);
+		ODSendVel_gainsData(CAN2,AXIS3_ID,MSG_SET_VEL_GAINS,8,&OdriveData,axis3,&ODSendData);
+		#endif
 		digitalLo(&OdriveData.Vel_gainFlag1);         
         
 	}
@@ -1613,16 +1658,29 @@ void ODChangePos_gain(void){
 	//修改电机1、电机2的位置环参数
 	if(OdriveData.Pos_gainFlag){                                              						
 		//config
-		
+		#if USE_CAN1
 		ODSendPos_gainData(CAN1,AXIS0_ID,MSG_SET_POS_GAIN,4,&OdriveData,axis0,&ODSendData);
 		ODSendPos_gainData(CAN1,AXIS1_ID,MSG_SET_POS_GAIN,4,&OdriveData,axis1,&ODSendData);
+		#endif
+		
+		#if USE_CAN2
+		ODSendPos_gainData(CAN2,AXIS0_ID,MSG_SET_POS_GAIN,4,&OdriveData,axis0,&ODSendData);
+		ODSendPos_gainData(CAN2,AXIS1_ID,MSG_SET_POS_GAIN,4,&OdriveData,axis1,&ODSendData);
+		#endif
+		
 		digitalLo(&OdriveData.Pos_gainFlag);         
 	}
 	//修改电机3、电机4的位置环参数
-	if(OdriveData.Pos_gainFlag1){                                              								
+	if(OdriveData.Pos_gainFlag1){
+		#if USE_CAN1
 		ODSendPos_gainData(CAN1,AXIS2_ID,MSG_SET_POS_GAIN,4,&OdriveData,axis2,&ODSendData);
 		ODSendPos_gainData(CAN1,AXIS3_ID,MSG_SET_POS_GAIN,4,&OdriveData,axis3,&ODSendData);
+		#endif
 		
+		#if USE_CAN2
+		ODSendPos_gainData(CAN2,AXIS2_ID,MSG_SET_POS_GAIN,4,&OdriveData,axis2,&ODSendData);
+		ODSendPos_gainData(CAN2,AXIS3_ID,MSG_SET_POS_GAIN,4,&OdriveData,axis3,&ODSendData);
+		#endif
 		digitalLo(&OdriveData.Pos_gainFlag1);         
         
 	}
@@ -1635,17 +1693,31 @@ void ODChangePos_gain(void){
 void ODClearError(void){		
     //如果想要对状态参数进行操作，直接将OdriveData.clearerror高一次即可
 	//清除电机1、电机2错误    
-	if(OdriveData.clearerrorFlag){                                              
+	if(OdriveData.clearerrorFlag){
+		#if	USE_CAN1
 		OdriveSend_RemoteCmd(CAN1,AXIS0_ID,MSG_CLEAR_ERRORS);
 		OdriveSend_RemoteCmd(CAN1,AXIS1_ID,MSG_CLEAR_ERRORS);
+		#endif
+		
+		#if USE_CAN2
+		OdriveSend_RemoteCmd(CAN2,AXIS0_ID,MSG_CLEAR_ERRORS);
+		OdriveSend_RemoteCmd(CAN2,AXIS1_ID,MSG_CLEAR_ERRORS);
+		#endif
 		digitalLo(&OdriveData.clearerrorFlag);         
         
 	}
 	//清除电机3、电机4错误
-	if(OdriveData.clearerrorFlag1){                                              
+	if(OdriveData.clearerrorFlag1){
+		
+		#if USE_CAN1
 		OdriveSend_RemoteCmd(CAN1,AXIS2_ID,MSG_CLEAR_ERRORS);
 		OdriveSend_RemoteCmd(CAN1,AXIS3_ID,MSG_CLEAR_ERRORS);
-
+		#endif
+		
+		#if USE_CAN2
+		OdriveSend_RemoteCmd(CAN2,AXIS2_ID,MSG_CLEAR_ERRORS);
+		OdriveSend_RemoteCmd(CAN2,AXIS3_ID,MSG_CLEAR_ERRORS);
+		#endif
 		digitalLo(&OdriveData.clearerrorFlag1);         
         
 	}
@@ -1657,18 +1729,31 @@ void ODRESET_ODRIVE(void){
 	//重启电机1、电机2
 	if(OdriveData.RebotFlag){                                              						
 		//config
+		#if USE_CAN1
 		OdriveSend_RemoteCmd(CAN1,AXIS0_ID,MSG_RESET_ODRIVE);
 		OdriveSend_RemoteCmd(CAN1,AXIS1_ID,MSG_RESET_ODRIVE);
+		#endif
+		
+		#if USE_CAN2
+		OdriveSend_RemoteCmd(CAN2,AXIS0_ID,MSG_RESET_ODRIVE);
+		OdriveSend_RemoteCmd(CAN2,AXIS1_ID,MSG_RESET_ODRIVE);
+		#endif
 		digitalLo(&OdriveData.RebotFlag);         
         
 	}
 	//重启电机3、电机4
 	if(OdriveData.RebotFlag1){                                              						
 		//config
+		#if USE_CAN1
 		OdriveSend_RemoteCmd(CAN1,AXIS2_ID,MSG_RESET_ODRIVE);
 		OdriveSend_RemoteCmd(CAN1,AXIS3_ID,MSG_RESET_ODRIVE);
-		digitalLo(&OdriveData.RebotFlag1);         
-        
+		#endif
+		
+		#if USE_CAN2
+		OdriveSend_RemoteCmd(CAN2,AXIS2_ID,MSG_RESET_ODRIVE);
+		OdriveSend_RemoteCmd(CAN2,AXIS3_ID,MSG_RESET_ODRIVE);
+		#endif
+        digitalLo(&OdriveData.RebotFlag1);
 	}
 }
 
@@ -1678,18 +1763,30 @@ void ODSetMotorState(void){
     //如果想要对电机控制模式进行操作，直接将OdriveData.ControlModeFlag高一次即可,并且电机控制模式为CMD_MENU
 	if((OdriveData.ControlModeFlag)){                                              
 		//修改电机1、电机2状态
+		#if USE_CAN1
 		set_axis_requested_state(CAN1,AXIS0_ID,MSG_SET_AXIS_REQUESTED_STATE,4,&OdriveData,axis0,&ODSendData);
 		set_axis_requested_state(CAN1,AXIS1_ID,MSG_SET_AXIS_REQUESTED_STATE,4,&OdriveData,axis1,&ODSendData);
-					
+		#endif
+
+		#if USE_CAN2
+		set_axis_requested_state(CAN2,AXIS0_ID,MSG_SET_AXIS_REQUESTED_STATE,4,&OdriveData,axis0,&ODSendData);
+		set_axis_requested_state(CAN2,AXIS1_ID,MSG_SET_AXIS_REQUESTED_STATE,4,&OdriveData,axis1,&ODSendData);
+		#endif
 		digitalLo(&OdriveData.ControlModeFlag);         
         
 	}
 
 	if((OdriveData.ControlModeFlag1)){                                              
 		//修改电机3、电机4状态
+		#if USE_CAN1
 		set_axis_requested_state(CAN1,AXIS2_ID,MSG_SET_AXIS_REQUESTED_STATE,4,&OdriveData,axis2,&ODSendData);
 		set_axis_requested_state(CAN1,AXIS3_ID,MSG_SET_AXIS_REQUESTED_STATE,4,&OdriveData,axis3,&ODSendData);
-			
+		#endif
+		
+		#if USE_CAN2
+		set_axis_requested_state(CAN2,AXIS2_ID,MSG_SET_AXIS_REQUESTED_STATE,4,&OdriveData,axis2,&ODSendData);
+		set_axis_requested_state(CAN2,AXIS3_ID,MSG_SET_AXIS_REQUESTED_STATE,4,&OdriveData,axis3,&ODSendData);
+		#endif
 		digitalLo(&OdriveData.ControlModeFlag1);         
         
 	}
@@ -1697,39 +1794,55 @@ void ODSetMotorState(void){
 
 //设置电机控制状态
 void ODSetLimit(void){		
-    //如果想要对电机速度电流限制进行操作，直接将OdriveData.SetLimitFlag高一次即可,并且电机控制模式为CMD_MENU
+    //如果想要对电机速度电流限制进行操作，直接将OdriveData.SetLimitFlag高一次即可,并且电机控制模式为AXIS_STATE_IDLE
 	if((OdriveData.SetLimitFlag)&&(OdriveData.AxisState[axis0] == AXIS_STATE_IDLE)){                                              
 			
-
+		#if USE_CAN1
 		ODSendLimitData(CAN1,AXIS0_ID,MSG_SET_LIMITS,8,&OdriveData,axis0,&ODSendData);
-										
+		#endif
+
+		#if USE_CAN2
+		ODSendLimitData(CAN2,AXIS0_ID,MSG_SET_LIMITS,8,&OdriveData,axis0,&ODSendData);
+		#endif
 		digitalLo(&OdriveData.SetLimitFlag);         
         
 	}
 	
 	if((OdriveData.SetLimitFlag)&&(OdriveData.AxisState[axis1] == AXIS_STATE_IDLE)){                                              
 			
-
+		#if USE_CAN1
 		ODSendLimitData(CAN1,AXIS1_ID,MSG_SET_LIMITS,8,&OdriveData,axis1,&ODSendData);
-										
+		#endif
+
+		#if USE_CAN2
+		ODSendLimitData(CAN2,AXIS1_ID,MSG_SET_LIMITS,8,&OdriveData,axis1,&ODSendData);
+		#endif
 		digitalLo(&OdriveData.SetLimitFlag);         
         
 	}
 	
 	if((OdriveData.SetLimitFlag)&&(OdriveData.AxisState[axis2] == AXIS_STATE_IDLE)){                                              
 			
-
+		#if USE_CAN1
 		ODSendLimitData(CAN1,AXIS2_ID,MSG_SET_LIMITS,8,&OdriveData,axis2,&ODSendData);
-										
+		#endif
+
+		#if USE_CAN2
+		ODSendLimitData(CAN2,AXIS2_ID,MSG_SET_LIMITS,8,&OdriveData,axis2,&ODSendData);
+		#endif
 		digitalLo(&OdriveData.SetLimitFlag);         
         
 	}
 	
 	if((OdriveData.SetLimitFlag)&&(OdriveData.AxisState[axis3] == AXIS_STATE_IDLE)){                                              
 			
-
+		#if USE_CAN1
 		ODSendLimitData(CAN1,AXIS3_ID,MSG_SET_LIMITS,8,&OdriveData,axis3,&ODSendData);
-										
+		#endif
+
+		#if USE_CAN2
+		ODSendLimitData(CAN2,AXIS3_ID,MSG_SET_LIMITS,8,&OdriveData,axis3,&ODSendData);
+		#endif
 		digitalLo(&OdriveData.SetLimitFlag);         
         
 	}
@@ -1815,11 +1928,15 @@ void odrivelUpdateTask(void *Parameters){
 //							if(flag == 1){
 								
 								if(NFC.flag == 0){
-//									ODSendInputVelData(CAN1,AXIS0_ID,MSG_SET_INPUT_VEL,4,&OdriveData,axis0,&ODSendData);
-//									ODSendInputVelData(CAN1,AXIS2_ID,MSG_SET_INPUT_VEL,4,&OdriveData,axis0,&ODSendData);
+									#if USE_CAN1
+									ODSendInputVelData(CAN1,AXIS0_ID,MSG_SET_INPUT_VEL,4,&OdriveData,axis0,&ODSendData);
+									ODSendInputVelData(CAN1,AXIS2_ID,MSG_SET_INPUT_VEL,4,&OdriveData,axis0,&ODSendData);
+									#endif
 									
+									#if USE_CAN2
 									ODSendInputVelData(CAN2,AXIS0_ID,MSG_SET_INPUT_VEL,4,&OdriveData,axis0,&ODSendData);
 									ODSendInputVelData(CAN2,AXIS2_ID,MSG_SET_INPUT_VEL,4,&OdriveData,axis0,&ODSendData);
+									#endif
 								}
 								NFC.flag++;
 //								ODSendInputVelData(CAN2,AXIS1_ID,MSG_SET_INPUT_VEL,4,&OdriveData,axis1,&ODSendData);
@@ -1867,11 +1984,15 @@ void odrivelUpdateTask(void *Parameters){
 //								if(flag == 1){
 								
 								if(NFC.flag == 2){
-//									ODSendInputVelData(CAN1,AXIS1_ID,MSG_SET_INPUT_VEL,4,&OdriveData,axis1,&ODSendData);
-//									ODSendInputVelData(CAN1,AXIS3_ID,MSG_SET_INPUT_VEL,4,&OdriveData,axis1,&ODSendData);
+									#if USE_CAN1
+									ODSendInputVelData(CAN1,AXIS1_ID,MSG_SET_INPUT_VEL,4,&OdriveData,axis1,&ODSendData);
+									ODSendInputVelData(CAN1,AXIS3_ID,MSG_SET_INPUT_VEL,4,&OdriveData,axis1,&ODSendData);
+									#endif
 									
+									#if USE_CAN2
 									ODSendInputVelData(CAN2,AXIS1_ID,MSG_SET_INPUT_VEL,4,&OdriveData,axis1,&ODSendData);
 									ODSendInputVelData(CAN2,AXIS3_ID,MSG_SET_INPUT_VEL,4,&OdriveData,axis1,&ODSendData);
+									#endif
 									NFC.flag = 0;
 								}
 								

@@ -25,17 +25,7 @@
 #define UART1_TX_LEN     256
 
 
-#define Q_GDSW PBin(3) 
-#define H_GDSW PDin(2) 
-
-#define Q_LD PCin(12) 
-#define H_LD PCin(6) 
-#define MF_SW PCin(7) 
-
-#define KeyNumHead  (u8)((GPIO_ReadInputDataBit(GPIOB,GPIO_Pin_14)<<3)\
-											 |(GPIO_ReadInputDataBit(GPIOB,GPIO_Pin_15)<<2)\
-											 |(GPIO_ReadInputDataBit(GPIOC,GPIO_Pin_8)<<1)\
-											 |(GPIO_ReadInputDataBit(GPIOC,GPIO_Pin_9)))  
+ 
 
 
 extern u8 Uart1_Rx[UART1_RX_LEN];
@@ -95,6 +85,12 @@ extern u8 WIFIdatalen;
 extern u8 AlltrainST1Flag;
 extern u8 trainST1Flag;
 extern u8 CarGoGoFlag;
+extern u8 TrainWarning;
+extern u8 SensorWarning;
+
+extern u16 SensorWarningDelay1,SensorWarningDelay2,SensorWarningDelay3,SensorWarningDelay4,\
+	 SensorWarningDelay5,SensorWarningDelay6,SensorWarningDelay7,SensorWarningDelay8;
+
 u8 WIFIdataSend(u8 *Databuff,u8 DataLen);
 void TrainContral (void);
 void ApplicationCommandUart1(u8 Type,u8 DataLen);
@@ -111,7 +107,7 @@ void TrainFollowTrain(void);
 void ReadE2promData(void);
 void ADDRACKToApp (u8 Type,u8 DataLen);	
 void ReadDataACK(u8 Type,u8 DataLen);
-void Can_USART_Data_Send_Task (void);
+void USART_Data_Send_Task (void);
 void TrainBusinessLogic (void);
 void IO_Init(void);
 void CanSendDataTask (void);

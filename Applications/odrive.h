@@ -42,7 +42,8 @@ enum MOTOR_Error {
 };		
 
 
-
+#define USE_CAN1 0
+#define USE_CAN2 1
 
 	
 	//CAN的电机控制命令
@@ -314,3 +315,5 @@ extern ODCANSendStruct_t ODSendData;
 
 
 #endif
+
+

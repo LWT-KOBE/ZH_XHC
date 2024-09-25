@@ -9,7 +9,7 @@
 
 #define CAN2_Task_PRIORITY 11
 #define CAN2_Task_STACK_SIZE 512
-#define CAN2_Task_NORMAL_PERIOD 5
+#define CAN2_Task_NORMAL_PERIOD 1
 
 
 

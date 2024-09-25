@@ -4,6 +4,45 @@
 #include "util.h"
 #include "config.h"
 
+
+extern float MyPidKp;
+extern float MyPidKi;
+extern float MyPidKd;
+
+/* 串级PIDA轮结构体 */
+typedef struct  
+{
+	float Position_KP;			/* 位置式PID系数 */
+	float Position_KI;
+	float Position_KD;
+	
+	float Incremental_KP;		/* 增量式PID系数 */
+	float Incremental_KI;
+	float Incremental_KD;
+	
+	float Target_Velocity;		/*    目标速度脉冲值	 */
+	float Reality_Velocity;		/*    实际速度脉冲值	 */
+	
+	float Target_Position;		/*    目标位置脉冲值	 */
+	float Reality_Position;     /*    实际位置脉冲值	 */
+	
+	float PWM;					/*	  PWM输出值	 */
+	
+	float dt;					/*		频率	 */
+	float encoder_counts;		/*		编码圈值(多少个脉冲一圈) */
+	
+	float Pos;					/*目标圈数*/
+	float Pos_current;			/*当前圈数*/			
+	float Vel;					/*目标速度,单位RPS*/
+	float Vel_current;			/*目标速度,单位RPS*/
+	
+	float error_margin;			/*	允许误差		*/
+	
+}Cascade_PIDA;
+
+
+
+
 typedef struct{
 	f32_t *yCoefficient;
 	f32_t *xCoefficient;
@@ -77,6 +116,9 @@ typedef struct {
     f32_t dataOut;
 } pidData_t;
 
+
+extern Cascade_PIDA  PIDA;             	/* 串级PIDA轮参数结构体 */
+
 pidStruct_t *pidInit(systemConfigPID_t *PIDConfigData);
 f32_t differentialCal(differentialDataStruct_t *differential,f32_t currentData);
 
@@ -91,10 +133,11 @@ float Position_PID_G(float reality,float target);
 float Position_PID_P(float reality,float target);
 float Position_PID_N(float reality,float target);
 float Position_PID_N1(float reality,float target);
-
+float Position_PIDA(Cascade_PIDA *PID,float target);
 void PID_Init(PID *pid, float p, float i, float d, float maxI, float maxOut);
 void PID_Calc(PID *pid, float reference, float feedback);
 void PID_CascadeCalc(CascadePID *pid, float outerRef, float outerFdb, float innerFdb);
+
 
 #endif
 

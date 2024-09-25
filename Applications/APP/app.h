@@ -14,32 +14,98 @@ extern u32 Pocket_A_Count,OldPocket_A_Count,NewPocket_A_Count;
 extern u16 gCheckHeartLiveCount;
 extern u16 gCheckTrailLiveCount;
 extern u16 gCheckFroCarLiveCount;
+extern u16 ChargePosition;
+extern u8 ChargeFlag;
 
 #define DriveMode  0//电机驱动类型 0--老驱动板 1--ODRIVE
-
-
+#define NFCMode    0  //NFC模式   0--挡片模式  1--NFC模式
+#define TrainVersion  1  //版本号
 void CheckCarCanCmd(void);
 void SaveData(CanRxMsg temp_CAN_Msg); 
 
 void PowerValueLedShow(void);
 void IAP_APP_Init(void);
-
+void ChargeStop (void);
 void Motor_Contral(u8 Dir,u16 Speed,u8 MotorEnable);
 extern u16 testflag;
-extern float gSpeedR;
 extern u8 MotorDir;
+extern u8 LD_ONFlag;
 extern unsigned  int gCarBatPower;
+extern u32 Pocket_A_Count1,Pocket_A_Count2;
+extern u32 PocketCount1,PocketCount2;
 void GetCarSpeed(void);
 void Motor_ContralA(u16 Speed);
 void Motor_ContralB(u16 Speed); 
 void time2_init(u16 arr,u16 psc);
-
+void TIM14_PWM_Init(u16 arr,u16 psc);
+void TIM3_Int_Init(u16 arr, u16 psc);
+void TM1620_Config(void);
+void TM1620_init(void);
+void Display (void);
+void LED_Tube_Choose_DisPlay1(u8 num1,u8 num2,u8 num3);
+void KeyScan(void);
+u8 LoadingStation(void);
 //显示电量的范围
 #define CARPOWER_VUALE_MAX_FLOAT  (320)
 #define CARPOWER_VUALE_MIN_FLOAT  (220)
 
 #define IAP_Bootloat_SIZE 		0x2000	//8K
 
+#define PAIR_POLE    10   //极对数
+#define HALL_STATE_NUM  3  //一个电角度内霍尔状态次数
+#define SPEED_VAULE    (u8)(HALL_STATE_NUM*PAIR_POLE)
+
+#define MOTOR_DIRA 			PCout(4)	 
+#define MOTOR_DIRB 			PCout(5)
+#define MOTOR_ENA_B 		PAout(5)
+
+
+#define Q_GDSW PBin(3) 
+#define H_GDSW PDin(2) 
+
+#define Q_LD PCin(12) 
+#define H_LD PAin(15) 
+#define MF_SW PCin(3)
+
+
+/*  		 	Backups 				  */
+#define Q_GDSW_B PCin(14) 
+#define H_GDSW_B PCin(13) 
+
+#define Q_LD_B PCin(0) 
+#define H_LD_B PCin(15) 
+
+#define MF_SW_B PCin(2)
+/*  		 	Backups 				  */
+
+#define HeadLed PAout(11)
+
+#define KeyNumHead  (u8)((GPIO_ReadInputDataBit(GPIOB,GPIO_Pin_14)<<3)\
+											 |(GPIO_ReadInputDataBit(GPIOB,GPIO_Pin_15)<<2)\
+											 |(GPIO_ReadInputDataBit(GPIOC,GPIO_Pin_8)<<1)\
+											 |(GPIO_ReadInputDataBit(GPIOC,GPIO_Pin_9))) 	
+											 
+											 
+#define SW1 PAin(0)											 
+#define SW2 PBin(12)	
+
+#define SCLH GPIO_SetBits(GPIOB, GPIO_Pin_1)
+#define SDAH GPIO_SetBits(GPIOB, GPIO_Pin_0)
+#define SCLL GPIO_ResetBits(GPIOB, GPIO_Pin_1)
+#define SDAL GPIO_ResetBits(GPIOB, GPIO_Pin_0)
+
+extern u16 LedNumDisplay;
+extern u8 KeyValue;
+extern u8 KeyUpFlag;
+extern u8 KeyMode;
+
+extern u32 PulseCntA;
+extern u32 PulseCntB;
+extern float  gSpeedR;
+extern float  gSpeedRB;
+extern float  gSpeedRA;
+extern float  gSpeedRD;
+extern float  gSpeedRC;
 
 extern float gPowerValueFloat;
 extern u8 ReadSpeedFlag;

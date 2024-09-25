@@ -230,13 +230,13 @@ Output  : none
 入口参数：无
 返 回 值：无
 **************************************************************************/
-void TIM3_IRQHandler(void)
-{ 		    		  			    
-	if(TIM3->SR&0X0001) //Overflow interrupt //溢出中断
-	{    				   				     	    	
-	}				   
-	TIM3->SR&=~(1<<0); //Clear the interrupt flag bit //清除中断标志位  	    
-}
+//void TIM3_IRQHandler(void)
+//{ 		    		  			    
+//	if(TIM3->SR&0X0001) //Overflow interrupt //溢出中断
+//	{    				   				     	    	
+//	}				   
+//	TIM3->SR&=~(1<<0); //Clear the interrupt flag bit //清除中断标志位  	    
+//}
 /**************************************************************************
 Function: Tim4 interrupt service function
 Input   : none

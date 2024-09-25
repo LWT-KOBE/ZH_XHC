@@ -21,12 +21,14 @@ int g_usart1_recv_cnt = 0;
 //定义存储接收字符串的数组
 char g_usart3_recv_buf[RECV_BUF_SIZE] = {0};
 
+char g_usart4_recv_buf[RECV_BUF_SIZE] = {0};
 
 //定义存储发送字符串的数组
 char g_usart3_send_buf[SEND_BUF_SIZE] = {0};
 
 //定义接收字符的计数
 int g_usart3_recv_cnt = 0;
+int g_usart4_recv_cnt = 0;
 
 //////////////////////////////////////////////////////////////////
 //加入以下代码,支持printf函数,而不需要选择use MicroLIB	  
@@ -326,9 +328,9 @@ void uart4_init(u32 bound)
 	//UsartNVIC configuration //UsartNVIC配置
 	NVIC_InitStructure.NVIC_IRQChannel = UART4_IRQn;
 	//Preempt priority //抢占优先级
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=1 ;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=3 ;
 	//Subpriority //子优先级
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;	
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 3;	
   //Enable the IRQ channel //IRQ通道使能	
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
   //Initialize the VIC register with the specified parameters 
@@ -509,8 +511,9 @@ void USART2_IRQHandler(void)
 //    USART_ClearITPendingBit(USART2, USART_IT_IDLE);
 		
 			// 清除IDLE标志位
-		(void)USART2->SR;
-		(void)USART2->DR;	
+		DMA_Cmd(DMA1_Stream5,DISABLE);
+		Uart1_Rx_length = USART2->SR;
+		Uart1_Rx_length = USART2->DR;	
 		Uart1_Rx_length = UART1_RX_LEN - DMA_GetCurrDataCounter(DMA1_Stream5); 
 		if(Uart1_Rx_length<UART1_RX_LEN)
 		{
@@ -564,8 +567,8 @@ int UART4_IRQHandler(void)
 	if(USART_GetITStatus(UART4, USART_IT_RXNE) != RESET) //Check if data is received //判断是否接收到数据
 	{	      
 		Res = USART_ReceiveData(UART4);	//读取接收到的数据
-		USART_SendData(USART1,Res);			//回显
-		//Serial4Data(Res);
+		//USART_SendData(USART1,Res);			//回显
+		Serial4Data(Res);
 		
 		USART_ITConfig(UART4, USART_IT_RXNE, ENABLE);
 	}
@@ -946,140 +949,8 @@ void Serial3Data(uint8_t ucData){
 		//接收字符的计数
 		g_usart3_recv_cnt++;
 		
-		
-			
-	
-		//当接收到符合格式的字符串，或者接收达到数组上限，就进行字符串数据的处理
-		if(g_usart3_recv_cnt > RECV_BUF_SIZE-1 || g_usart3_recv_buf[g_usart3_recv_cnt-1] == '\n')
-		{
-			//strncmp函数是用来比较两个字符串前N个字节是否相同，strcmp函数是比较两个字符串是否相同
-			/*
-				参数1、2：要比较的两个字符串地址
-				参数3：要比较的两个字符串的前n个字节
-				返回0，则表示字符串前N个字节相同
-			*/
-			/*
-						printf,scanf函数是标准输出输入函数，他会自动从标准设备中进行数据的输出与输入（stdout,stdin）
-						sprintf,sscanf函数他们的输出输入已经实现重定向，他会自动把数据从所指定的内存空间中进行输出与输入（buf）
-						参数1：要输出/输入的数据内存空间
-						参数2：要输出/输入的字符串格式，格式化符号%d：整型，%c：字符，%s：字符串
-						参数3：要格式化输出/输入的变量
-				*/
-			
-			
-			if(strncmp(g_usart3_recv_buf, "V=\n ", 2) == 0)//速度控制命令
-			{
-				sscanf(g_usart3_recv_buf, "V=%f\n", &OdriveData.SetVel[0].float_temp);//速度修改
-				OdriveData.SetVel[1].float_temp = -OdriveData.SetVel[0].float_temp;
-				flag = 1;
-				//OdriveData.Vel_gain[0].float_temp += 5;
-				//printf("%f\r\n",OdriveData.SetVel[1].float_temp);
-				//sprintf(g_usart1_send_buf, "修改后Angle=%f\r\n", OdriveData.SetVel[0].float_temp);//修改后显示
-			}
-			
-			
-			if(strncmp(g_usart3_recv_buf, "P=\n ", 2) == 0)//
-			{
-				
-				sscanf(g_usart3_recv_buf, "P=%f\n", &OdriveData.SetPos[0].float_temp);//速度修改
-				//sprintf(g_usart1_send_buf, "修改后Angle=%f\r\n", A);//速度限制修改后显示
-			}
-			
-			if(strncmp(g_usart3_recv_buf, "Pos\n ", 4) == 0)//
-			{
-				OdriveData.AxisState[axis0] = CMD_MENU;
-				OdriveData.ControlMode[0] = CONTROL_MODE_POSITION_TRAP;
-	
-				OdriveData.ControlModeFlag = 1;
-				OdriveData.RequestedStateFlag = 1;
-				//sscanf(g_usart1_recv_buf, "P=%f\n", &OdriveData.SetPos[0].float_temp);//速度修改
-				//sprintf(g_usart1_send_buf, "修改后Angle=%f\r\n", A);//速度限制修改后显示
-			}
-			
-			if(strncmp(g_usart3_recv_buf, "Vel\n ", 4) == 0)//
-			{
-				
-				OdriveData.AxisState[axis0] = CMD_MENU;
-				OdriveData.ControlMode[0] = CONTROL_MODE_VELOCITY_RAMP;
-	
-				OdriveData.ControlModeFlag = 1;
-				OdriveData.RequestedStateFlag = 1;
-				//sscanf(g_usart1_recv_buf, "P=%f\n", &OdriveData.SetPos[0].float_temp);//速度修改
-				//sprintf(g_usart1_send_buf, "修改后Angle=%f\r\n", A);//速度限制修改后显示
-			}
-			
-			if(strncmp(g_usart3_recv_buf, "Set\n ", 4) == 0)//
-			{
-				OdriveData.AxisState[0] = 27;
-				//OdriveData.AxisState[axis0] = CMD_MOTOR;
-				OdriveData.RequestedStateFlag = 1;
-				//sscanf(g_usart1_recv_buf, "P=%f\n", &OdriveData.SetPos[0].float_temp);//速度修改
-				//sprintf(g_usart1_send_buf, "修改后Angle=%f\r\n", A);//速度限制修改后显示
-			}
-			
-			if(strncmp(g_usart3_recv_buf, "Pos_gain=\n ", 9) == 0)//位置环增益修改
-			{
-				sscanf(g_usart3_recv_buf, "Pos_gain=%f\n", &OdriveData.Pos_gain[0].float_temp);//增益修改
-				OdriveData.Pos_gain[1].float_temp = OdriveData.Pos_gain[0].float_temp;
-				//增益修改标识符
-				flag = 1;
-			}
-			
-			if(strncmp(g_usart3_recv_buf, "Vel_gain=\n ", 9) == 0)//速度环增益修改
-			{
-				sscanf(g_usart3_recv_buf, "Vel_gain=%f\n", &OdriveData.Vel_gain[0].float_temp);//增益修改
-				OdriveData.Vel_gain[1].float_temp = OdriveData.Vel_gain[0].float_temp;
-				//增益修改标识符
-				flag = 1;
-			}
-			
-			if(strncmp(g_usart3_recv_buf, "Vel_integrator_gain=\n ", 20) == 0)//速度环积分增益修改
-			{
-				sscanf(g_usart3_recv_buf, "Vel_integrator_gain=%f\n", &OdriveData.Vel_integrator_gain[0].float_temp);//增益修改
-				OdriveData.Vel_integrator_gain[1].float_temp = OdriveData.Vel_integrator_gain[0].float_temp;
-				//增益修改标识符
-				flag = 1;
-			}
-			
-			if(strncmp(g_usart3_recv_buf, "OYY=\n ", 4) == 0)//速度控制命令
-			{
-				sscanf(g_usart3_recv_buf, "OYY=%f\n", &Angle_Goal.target);//速度修改
-				Angle_Goal.finish = 0;
-				//OdriveData.Vel_gain[0].float_temp += 5;
-				//printf("%f\r\n",OdriveData.SetVel[1].float_temp);
-				//sprintf(g_usart1_send_buf, "修改后Angle=%f\r\n", OdriveData.SetVel[0].float_temp);//修改后显示
-			}
-			
-			if(strncmp(g_usart3_recv_buf, "MOA=\n ", 4) == 0)//速度控制命令
-			{
-				balanceData.flag = 0;
-				sscanf(g_usart3_recv_buf, "MOA=%f\n", &Motor_SpeedA_Goal.target);//速度修改
-				//OdriveData.Vel_gain[0].float_temp += 5;
-				//printf("%f\r\n",OdriveData.SetVel[1].float_temp);
-				//sprintf(g_usart1_send_buf, "修改后Angle=%f\r\n", OdriveData.SetVel[0].float_temp);//修改后显示
-			}
-			
-			if(strncmp(g_usart3_recv_buf, "MOB=\n ", 4) == 0)//速度控制命令
-			{
-				balanceData.flag = 1;
-				sscanf(g_usart3_recv_buf, "MOB=%f\n", &Motor_SpeedB_Goal.target);//速度修改
-				//OdriveData.Vel_gain[0].float_temp += 5;
-				//printf("%f\r\n",OdriveData.SetVel[1].float_temp);
-				//sprintf(g_usart1_send_buf, "修改后Angle=%f\r\n", OdriveData.SetVel[0].float_temp);//修改后显示
-			}
-			
-			if(strncmp(g_usart3_recv_buf, "F=\n ", 2) == 0)//速度控制命令
-			{
-				sscanf(g_usart3_recv_buf, "F=%d\n", &balanceData.flag);//速度修改
-			}
-			
-			//清空字符串数组
-			memset(g_usart3_recv_buf, 0, sizeof(g_usart3_recv_buf));
-			
-			//计数值清空
-			g_usart3_recv_cnt = 0;
-		}
-	
+
+
 }
 
 
@@ -1087,18 +958,17 @@ void Serial3Data(uint8_t ucData){
 void Serial4Data(uint8_t ucData){
 	static unsigned char ucRxBuffer[250];
 	static unsigned char ucRxCnt = 0;	
-	ucRxBuffer[ucRxCnt++]=ucData;	//将收到的数据存入缓冲区中
-	if (ucRxBuffer[0]!=0x66) //数据头不对，则重新开始寻找0x66数据头
-	{
-		ucRxCnt=0;
-		return;
-	}
-	if (ucRxCnt<65) {return;}//数据不满65个，则返回
+	g_usart4_recv_buf[ucRxCnt++]=ucData;	//将收到的数据存入缓冲区中
+//	if (ucRxBuffer[0]!=0xfe) //数据头不对，则重新开始寻找0x66数据头
+//	{
+//		ucRxCnt=0;
+//		return;
+//	}
+	
+	if (ucRxCnt<4) {return;}//数据不满65个，则返回
 	else
 	{
-		for(int i = 1;i < 65; i++){
-			//buf[i - 1] = ucRxBuffer[i];
-		}
+
 		ucRxCnt=0;//清空缓存区
 	}
 }

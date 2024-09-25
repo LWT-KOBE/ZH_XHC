@@ -32,6 +32,7 @@ void controlUpdateTask(void *Parameters){
 			digitalHi(&getcontrolData()->dataInitFlag);
 		}
 		CanSendDataTask();//CAN 与车斗通信
+		
 //		temp[0] = 0xfa;
 //		temp[1] = 0x00;
 //		temp[2] = OdReceivedData.vel_estimate[1].u8_temp[0];

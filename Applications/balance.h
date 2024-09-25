@@ -59,5 +59,5 @@ extern balance_target_t Motor_SpeedB_Goal;
 extern Encoding_Wheel EW;
 
 void balanceInit(void);
-
+float max_of_four(float a, float b, float c, float d);
 #endif
