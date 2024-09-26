@@ -49,7 +49,7 @@ u8 ApplicationAddrFlag = 0;// 0申请地址    1--车厢收到地址
 u8 Reply_Result_Flag = 0;
 u8 SendDataBuf1[7];		        //发送数据的数组
 u8 SendDataBuf2[120];
-u8 SendDataBuf3[35];
+u8 SendDataBuf3[90];
 u8 SendDataBuf4[6];
 u8 SendDataBuf5[6];
 u8 SendDataBuf6[27];
@@ -779,8 +779,7 @@ void HeartToApp (u8 Type,u8 DataLen)//心跳包
 	SendDataBuf3[1] = Type;
 	SendDataBuf3[2] = DataLen;	
 	
-////////////////V////////////////////	
-	
+////////////////V////////////////////		
 	SendDataBuf3[0+3] = TrainHeadNum;
 	SendDataBuf3[1+3] = PocketCount <<8;
 	SendDataBuf3[2+3] = PocketCount;
@@ -795,16 +794,17 @@ void HeartToApp (u8 Type,u8 DataLen)//心跳包
 	SendDataBuf3[8+3] = TrainVersion;//版本号		
 	SendDataBuf3[9+3] = TrainBasketMaxNum;
 	
-	for(u8 i=0;i<TrainBasketMaxNum;i++)
+	for(u8 i=0;i<21;i++)
   {
 		SendDataBuf3[10+3+i] = (BasketError[i]);
   }	
-////////////////////////////////////	
-	SendDataBuf3[11+3+TrainBasketMaxNum] = gSpeedRA;
-	SendDataBuf3[12+3+TrainBasketMaxNum] = gSpeedRB;
-	SendDataBuf3[13+3+TrainBasketMaxNum] = Pocket_A_Count;
-	SendDataBuf3[14+3+TrainBasketMaxNum] = PIDA.PWM*0.03;
-	SendDataBuf3[15+3+TrainBasketMaxNum] = ChargePosition;
+////////////////////////////////////
+
+	SendDataBuf3[11+3+20] = gSpeedRA;
+	SendDataBuf3[12+3+20] = gSpeedRB;
+	SendDataBuf3[13+3+20] = Pocket_A_Count;
+	SendDataBuf3[14+3+20] = PIDA.PWM*0.03;
+	SendDataBuf3[15+3+20] = ChargePosition;
 	
 ////////////////////////////////////	
 	
@@ -1386,7 +1386,7 @@ void USART_Data_Send_Task (void)
 			if(HeartDelayCount >=6)
 			{
 				HeartDelayCount = 0; 
-				HeartToApp(9,10+TrainBasketMaxNum+5);//心跳	
+				HeartToApp(9,10+21+5);//心跳	
 			}
 		}		
 		else if(SendUDPDataDelay100ms >4)

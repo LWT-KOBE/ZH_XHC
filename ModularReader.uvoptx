@@ -410,6 +410,11 @@
           <WinNumber>1</WinNumber>
           <ItemText>g_usart4_recv_buf</ItemText>
         </Ww>
+        <Ww>
+          <count>49</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>WIFISendDataBuf</ItemText>
+        </Ww>
       </WatchWindow1>
       <WatchWindow2>
         <Ww>
