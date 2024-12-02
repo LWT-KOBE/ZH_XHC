@@ -138,7 +138,7 @@ void PID_Init(PID *pid, float p, float i, float d, float maxI, float maxOut);
 void PID_Calc(PID *pid, float reference, float feedback);
 void PID_CascadeCalc(CascadePID *pid, float outerRef, float outerFdb, float innerFdb);
 
-
+float Incremental_PID1(float reality,float target);
 #endif
 
 

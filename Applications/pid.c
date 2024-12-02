@@ -294,13 +294,13 @@ float Incremental_PID(float reality,float target)
 //	 Incremental_KD = 0.00f;
 	 
 	 //5ms状态下
-	 Incremental_KP = 0.5f;
-	 Incremental_KI = 0.06f;
-	 Incremental_KD = 0.0f;
+//	 Incremental_KP = 1.0f;
+//	 Incremental_KI = 0.01f;
+//	 Incremental_KD = 0.0f;
 	
-//	 Incremental_KP = 0.000125f;
-//	 Incremental_KI = 0.001f;
-//	 Incremental_KD = 0.00f;
+	 Incremental_KP = 3.0f;
+	 Incremental_KI = 0.03f;
+	 Incremental_KD = 0.0f;
 	 
 	 //Bias=target * 4.5f - reality;                                   /* 计算偏差 */
 	 if(target == 0){
@@ -682,12 +682,12 @@ pwm代表输出
 **************************************************************************/
 float Position_PIDA(Cascade_PIDA *PID,float target) 
 { 
-
+		
     PIDA.Position_KP 		= MyPidKp;		/*	位置环KP参数	*/
 		PIDA.Position_KI 		= MyPidKi;		/*	位置环KI参数	*/
 		PIDA.Position_KD 		= MyPidKd;		/*	位置环KD参数	*/
 	
-    static float Bias,Pwm,Last_Bias,Integral_bias=0;
+    static float Bias,Pwm,Last_Bias,Integral_bias=0,a = 0;
 		if(CarDriveFlag == 0)
 		{
 			Bias = 0;target=0;Integral_bias = 0;Last_Bias = 0;Pwm = 0;
@@ -696,8 +696,8 @@ float Position_PIDA(Cascade_PIDA *PID,float target)
     Bias=target-gSpeedR;                            /* 计算偏差 */
     Integral_bias+=Bias;	                        /* 偏差累积 */
     
-    if(Integral_bias> 7000) Integral_bias = 7000;   /* 积分限幅 */
-    if(Integral_bias<-7000) Integral_bias =-7000;
+    if(Integral_bias> 10000) Integral_bias = 10000;   /* 积分限幅 */
+    if(Integral_bias<-10000) Integral_bias =-10000;
     
     Pwm = (PID->Position_KP *Bias)                        /* 比例环节 */
          +(PID->Position_KI *Integral_bias)               /* 积分环节 */
@@ -709,6 +709,43 @@ float Position_PIDA(Cascade_PIDA *PID,float target)
 		{
 			Pwm =  8000;
 		}
+		
+//		if(target >= 150){
+//			if(Bias >= 10){
+//				a++;
+//			}else if(Bias < 30){
+//				a = 0;
+//			}
+//			
+//		}else if(target < 150){
+//			a = 0;
+//		}
+//		if(a >= 20){
+//			Pwm = 6000;
+//			if(a >= 40){
+//				a = 0;
+//			}
+//		}
+		
+		if(target >= 150){
+			if(gSpeedR > target && target >= 170 && gSpeedR < 200){
+				Pwm -= 3400;
+			}
+			
+			if(gSpeedR > target && target >= 200 && gSpeedR < 220){
+				Pwm -= 4400;
+			}
+			
+			if(gSpeedR > target && target >= 150 && gSpeedR < 165){
+				Pwm -= 1300;
+			}
+			
+			if(gSpeedR > target && target >= 165 && gSpeedR < 170){
+				Pwm -= 2300;
+			}
+		}
+		
+		
 		if(Pwm < 0) 								/* 输出限幅 */		
 		{	
 			Pwm = 0;			

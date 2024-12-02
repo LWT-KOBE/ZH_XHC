@@ -121,6 +121,7 @@
 .\objects\pid.o: .\Applications\STATE\State.h
 .\objects\pid.o: Applications\MyADC.h
 .\objects\pid.o: .\Applications\BSP_eeprom\BSP_eeprom.h
+.\objects\pid.o: .\Applications\REMOTE\remote.h
 .\objects\pid.o: .\Math\nav_para.h
 .\objects\pid.o: .\Math\aq_math.h
 .\objects\pid.o: .\Math\matrix.h

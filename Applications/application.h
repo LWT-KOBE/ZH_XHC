@@ -18,4 +18,5 @@
 #include "State.h"
 #include "MyADC.h" 
 #include "BSP_eeprom.h"
+#include "remote.h"
 #endif

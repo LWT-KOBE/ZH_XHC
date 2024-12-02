@@ -121,6 +121,7 @@
 .\objects\usartx.o: .\Applications\STATE\State.h
 .\objects\usartx.o: .\Applications\MyADC.h
 .\objects\usartx.o: .\Applications\BSP_eeprom\BSP_eeprom.h
+.\objects\usartx.o: .\Applications\REMOTE\remote.h
 .\objects\usartx.o: .\Math\nav_para.h
 .\objects\usartx.o: .\Math\aq_math.h
 .\objects\usartx.o: .\Math\matrix.h

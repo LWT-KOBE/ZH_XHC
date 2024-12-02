@@ -119,6 +119,7 @@
 .\objects\isp_exit.o: .\Applications\STATE\State.h
 .\objects\isp_exit.o: .\Applications\MyADC.h
 .\objects\isp_exit.o: .\Applications\BSP_eeprom\BSP_eeprom.h
+.\objects\isp_exit.o: .\Applications\REMOTE\remote.h
 .\objects\isp_exit.o: .\Math\nav_para.h
 .\objects\isp_exit.o: .\Math\aq_math.h
 .\objects\isp_exit.o: .\Math\matrix.h

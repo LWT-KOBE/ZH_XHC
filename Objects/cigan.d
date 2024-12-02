@@ -130,3 +130,4 @@
 .\objects\cigan.o: .\Applications\STATE\State.h
 .\objects\cigan.o: .\Applications\MyADC.h
 .\objects\cigan.o: .\Applications\BSP_eeprom\BSP_eeprom.h
+.\objects\cigan.o: .\Applications\REMOTE\remote.h

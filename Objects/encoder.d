@@ -120,6 +120,7 @@
 .\objects\encoder.o: .\Applications\STATE\State.h
 .\objects\encoder.o: .\Applications\MyADC.h
 .\objects\encoder.o: .\Applications\BSP_eeprom\BSP_eeprom.h
+.\objects\encoder.o: .\Applications\REMOTE\remote.h
 .\objects\encoder.o: .\Math\nav_para.h
 .\objects\encoder.o: .\Math\aq_math.h
 .\objects\encoder.o: .\Math\matrix.h

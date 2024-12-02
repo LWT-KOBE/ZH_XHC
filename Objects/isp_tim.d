@@ -119,6 +119,7 @@
 .\objects\isp_tim.o: .\Applications\STATE\State.h
 .\objects\isp_tim.o: .\Applications\MyADC.h
 .\objects\isp_tim.o: .\Applications\BSP_eeprom\BSP_eeprom.h
+.\objects\isp_tim.o: .\Applications\REMOTE\remote.h
 .\objects\isp_tim.o: .\Math\nav_para.h
 .\objects\isp_tim.o: .\Math\aq_math.h
 .\objects\isp_tim.o: .\Math\matrix.h

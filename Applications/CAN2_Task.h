@@ -25,5 +25,5 @@ CAN2_TaskStruct_t* getCAN2Data(void);
 
 
 void CAN2DataInit(void);
-
+void driver_can1_init(CAN_TypeDef* rm_canx,BSP_GPIOSource_TypeDef *rm_canx_rx,BSP_GPIOSource_TypeDef *rm_canx_tx,u8 Preemption,u8 Sub);
 #endif

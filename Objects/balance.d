@@ -130,3 +130,4 @@
 .\objects\balance.o: .\Applications\STATE\State.h
 .\objects\balance.o: Applications\MyADC.h
 .\objects\balance.o: .\Applications\BSP_eeprom\BSP_eeprom.h
+.\objects\balance.o: .\Applications\REMOTE\remote.h

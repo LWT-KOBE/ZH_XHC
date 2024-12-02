@@ -9,7 +9,12 @@
 #define ST4 4		//装载交互
 #define ST5 5   //申请出站
 #define ST6 6		//出站
-#define ST7 7   //进站减速
+#define ST7 7		//出站加速
+#define ST8 8		//立即发车
+#define ST9 9		//指定位置停车
+
+#define ST10 10   //断电重启
+#define ST11 11   //车厢失联
 
 #define FLAG_HEAD 0xfe
 #define FLAG_TAIL 0xfe
@@ -38,7 +43,7 @@ extern u8 Uart2_Tx[UART2_TX_LEN];
 extern u16 Uart2_Rx_length;
 extern u16 Uart2_Tx_length;
 
-
+extern u8 StepSt0;
 extern u8 InStationLSFlag;
 extern u8 GoTrainflag ;
 extern u8 TravelCommand;
@@ -74,6 +79,7 @@ extern u8 ShieldBasket;
 extern u8 RecycleBasket;
 extern u8 RecycleBasketFlag;
 extern u8 CanSendOutStationFlag;
+extern u16 CanSendOutStationDelay;
 extern u8 PocketStep;
 extern u8 SendUDPDataDelay200ms;
 extern u8 SendUDPDataDelay100ms;
@@ -88,6 +94,10 @@ extern u8 CarGoGoFlag;
 extern u8 TrainWarning;
 extern u8 SensorWarning;
 
+extern u8 test121 ;
+extern u8 test123 ;
+extern u8 test124 ;
+
 extern u16 SensorWarningDelay1,SensorWarningDelay2,SensorWarningDelay3,SensorWarningDelay4,\
 	 SensorWarningDelay5,SensorWarningDelay6,SensorWarningDelay7,SensorWarningDelay8;
 
@@ -99,18 +109,24 @@ void HeartToApp (u8 Type,u8 DataLen);
 void ST1ACKToApp (u8 Type,u8 DataLen);
 void  ApplyForExitToAPP(u8 Type,u8 DataLen);	
 void  RecycleACKToAPP(u8 Type,u8 DataLen);
-void ConfigrationAck(u8 Type,u8 DataLen);
+void  ConfigrationAck(u8 Type,u8 DataLen);
+void  RecyAck(u8 Type,u8 DataLen);
+void  TrainGoACK(u8 Type,u8 DataLen);
+void ChargeACKData(u8 Type,u8 DataLen);//指定位置停车应答
+void CarRestACK(u8 Type,u8 DataLen);
 void  InStationToAPP(u8 Type,u8 DataLen);
-void ApplyForExit(u8 Type,u8 DataLen);
-void MotorBrake(void);
-void TrainFollowTrain(void);
-void ReadE2promData(void);
-void ADDRACKToApp (u8 Type,u8 DataLen);	
-void ReadDataACK(u8 Type,u8 DataLen);
-void USART_Data_Send_Task (void);
-void TrainBusinessLogic (void);
-void IO_Init(void);
-void CanSendDataTask (void);
+void  ApplyForExit(u8 Type,u8 DataLen);
+void  MotorBrake(void);
+void  TrainFollowTrain(void);
+void  ReadE2promData(void);
+void  ADDRACKToApp (u8 Type,u8 DataLen);	
+void  ReadDataACK(u8 Type,u8 DataLen);
+void  USART_Data_Send_Task (void);
+void  TrainBusinessLogic (void);
+void  IO_Init(void);
+void  CanSendDataTask (void);
+u8 Can_Send_Config(u8 len);
+u8 Can_Send_ReciveResult(u8 len);
 #endif
 
 
