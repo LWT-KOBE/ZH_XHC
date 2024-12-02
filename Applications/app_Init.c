@@ -18,7 +18,7 @@ void appInit(void *Parameters){
 	
 	#if DriveMode //新驱动板
 	OdriveInit();
-	
+	 
 	#endif
 	//无线数传初始化
 	//wirelessInit();

@@ -31,7 +31,7 @@ void EEPROM_GPIO_Init(void)
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100MHz
 	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;//上拉
 	GPIO_Init(GPIOA, &GPIO_InitStructure);//初始化GPIO		
-
+	WPS = 1;//24C02写保护
 
 //	GPIO_InitStructure.GPIO_Pin = EEPROM_WP_PIN;			//WP 
 //  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
@@ -44,71 +44,67 @@ void EEPROM_GPIO_Init(void)
 
 void EEPROM_delay(void)
 {
-	u8 i = 255; //这里可以优化速度 ，经测试最低到5还能写入
-	while(i)
-	{
-		i--;
-	}
+	delay_us(100);
 }
 
 bool EEPROM_Start(void)
 {
 	SET_EEPROM_SDA;
 	SET_EEPROM_SCL;
-	delay_us(3);
+	EEPROM_delay();
 	if(!SDA_read)return false; //SDA线为低电平则总线忙,退出
 	RESET_EEPROM_SDA;
-	delay_us(3);
+	EEPROM_delay();
 	if(SDA_read) return false; //SDA线为高电平则总线出错,退出
 	RESET_EEPROM_SDA;
-	delay_us(3);
+	EEPROM_delay();
 	return true;
 }
 
 void EEPROM_Stop(void)
 {
 	RESET_EEPROM_SCL;
-	delay_us(3);
+	EEPROM_delay();
 	RESET_EEPROM_SDA;
-	delay_us(3);
+	EEPROM_delay();
 	SET_EEPROM_SCL;
-	delay_us(3);
+	EEPROM_delay();
 	SET_EEPROM_SDA;
-	delay_us(3);
+	EEPROM_delay();
 }
 
 void EEPROM_Ack(void)
 {
 	RESET_EEPROM_SCL;
-	delay_us(3);
+	EEPROM_delay();
 	RESET_EEPROM_SDA;
-	delay_us(3);
+	EEPROM_delay();
 	SET_EEPROM_SCL;
-	delay_us(3);
+	EEPROM_delay();
 	RESET_EEPROM_SCL;
-	delay_us(3);
+	EEPROM_delay();
 }
 
 void EEPROM_NoAck(void)
 {
 	RESET_EEPROM_SCL;
-	delay_us(3);
+	EEPROM_delay();
 	SET_EEPROM_SDA;
-	delay_us(3);
+	EEPROM_delay();
 	SET_EEPROM_SCL;
-	delay_us(3);
+	EEPROM_delay();
 	RESET_EEPROM_SCL;
-	delay_us(3);
+	EEPROM_delay();
 }
 
 bool EEPROM_WaitAck(void)   //返回为:=1有ACK,=0无ACK
 {
 	RESET_EEPROM_SCL;
-	delay_us(3);
+	EEPROM_delay();
 	SET_EEPROM_SDA;
-	delay_us(3);
+	EEPROM_delay();
 	SET_EEPROM_SCL;
-	delay_us(3);
+	EEPROM_delay();
 	if(SDA_read)
 	{
 		RESET_EEPROM_SCL;
@@ -125,16 +121,16 @@ void EEPROM_SendByte(u8 SendByte) //数据从高位到低位//
 	while(i--)
 	{
 		RESET_EEPROM_SCL;
-		delay_us(3);
+		EEPROM_delay();
 		
 		if(SendByte & 0x80)
 			SET_EEPROM_SDA;
 		else
 			RESET_EEPROM_SDA;
 		SendByte <<= 1;
-		delay_us(3);
+		EEPROM_delay();
 		SET_EEPROM_SCL;
-		delay_us(3);
+		EEPROM_delay();
 	}
 	RESET_EEPROM_SCL;
 }
@@ -149,9 +145,9 @@ u8 EEPROM_ReceiveByte(void)  //数据从高位到低位//
 	{
 		ReceiveByte <<= 1;
 		RESET_EEPROM_SCL;
-		delay_us(3);
+		EEPROM_delay();
 		SET_EEPROM_SCL;
-		delay_us(3);
+		EEPROM_delay();
 		if(SDA_read)
 		{
 			ReceiveByte |= 0x01;

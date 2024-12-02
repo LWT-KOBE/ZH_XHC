@@ -68,9 +68,9 @@ void balanceUpdateTask(void *Parameters){
 			if(fabs(OdReceivedData.vel_estimate[1].float_temp * 0.2199f ) <= 0.2){
 				Motor_SpeedA_Goal.target = 0;
 			}else if(OdReceivedData.vel_estimate[1].float_temp * 0.2199f  > 0.2){
-				Motor_SpeedA_Goal.target = -1.575;
+				Motor_SpeedA_Goal.target = -0.4;
 			}else if(OdReceivedData.vel_estimate[1].float_temp * 0.2199f  < -0.2){
-				Motor_SpeedA_Goal.target = 1.575;
+				Motor_SpeedA_Goal.target = 0.4;
 			}
 		}
 			

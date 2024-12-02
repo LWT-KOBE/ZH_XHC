@@ -119,6 +119,7 @@
 .\objects\odrive.o: .\Applications\STATE\State.h
 .\objects\odrive.o: Applications\MyADC.h
 .\objects\odrive.o: .\Applications\BSP_eeprom\BSP_eeprom.h
+.\objects\odrive.o: .\Applications\REMOTE\remote.h
 .\objects\odrive.o: .\Math\nav_para.h
 .\objects\odrive.o: .\Math\aq_math.h
 .\objects\odrive.o: .\Math\matrix.h

@@ -158,11 +158,18 @@ void ODSendPos_gainData(CAN_TypeDef *CANx, uint32_t ID_CAN,uint32_t CMD_CAN, uin
 ***************************************************
 */
 void ODSendInputVelData(CAN_TypeDef *CANx, uint32_t ID_CAN,uint32_t CMD_CAN, uint8_t len,OdriveStruct_t* Spetsnaz,uint8_t axis,ODCANSendStruct_t* CanSendData) {
-
+	
+	Spetsnaz->SetCur[axis].float_temp +=  0.0001f;
+	
 	CanSendData->data[0] = Spetsnaz->SetVel[axis].u8_temp[0];
 	CanSendData->data[1] = Spetsnaz->SetVel[axis].u8_temp[1];
 	CanSendData->data[2] = Spetsnaz->SetVel[axis].u8_temp[2];
 	CanSendData->data[3] = Spetsnaz->SetVel[axis].u8_temp[3];
+	
+	CanSendData->data[4] = Spetsnaz->SetCur[axis].u8_temp[0];
+	CanSendData->data[5] = Spetsnaz->SetCur[axis].u8_temp[1];
+	CanSendData->data[6] = Spetsnaz->SetCur[axis].u8_temp[2];
+	CanSendData->data[7] = Spetsnaz->SetCur[axis].u8_temp[3];
 	
 
 	OdriveSendData(CANx,ID_CAN,CMD_CAN,len,CanSendData); 
@@ -958,13 +965,13 @@ void driver_can2_init(CAN_TypeDef* rm_canx,BSP_GPIOSource_TypeDef *rm_canx_rx,BS
 	}
 	can2.CAN_FilterInitStructure = CAN2_FilterInitStructure;
 	//1M波特率
-	//BSP_CAN_Mode_Init(&can1,CAN_SJW_1tq,CAN_BS2_5tq,CAN_BS1_9tq,3,CAN_Mode_Normal,Preemption,Sub);
+	BSP_CAN_Mode_Init(&can1,CAN_SJW_1tq,CAN_BS2_5tq,CAN_BS1_9tq,3,CAN_Mode_Normal,Preemption,Sub);
 	
 	//250K波特率
 	//BSP_CAN_Mode_Init(&can1,CAN_SJW_1tq,CAN_BS2_5tq,CAN_BS1_9tq,12,CAN_Mode_Normal,Preemption,Sub);
 	
 	//125K波特率
-	BSP_CAN_Mode_Init(&can2,CAN_SJW_1tq,CAN_BS2_5tq,CAN_BS1_9tq,24,CAN_Mode_Normal,Preemption,Sub);
+	//BSP_CAN_Mode_Init(&can2,CAN_SJW_1tq,CAN_BS2_5tq,CAN_BS1_9tq,24,CAN_Mode_Normal,Preemption,Sub);
 }
 
 ////     Frame
@@ -1274,7 +1281,8 @@ void CAN2_RX0_IRQHandler(void){
 		rxbuf2=can2_rx_msg.StdId;	
 		digitalIncreasing(&OdriveData.OdError.errorCount);
 		/*********以下是自定义部分**********/
-			
+		OdriveLifeFlag = 1;	
+		gCheckHeartOdriveCount = 0;
 		switch(can2_rx_msg.StdId>>5){         
 				case AXIS0_ID:
 					//目前接收处理数据指令最大可支持到31
@@ -1934,8 +1942,8 @@ void odrivelUpdateTask(void *Parameters){
 									#endif
 									
 									#if USE_CAN2
-									ODSendInputVelData(CAN2,AXIS0_ID,MSG_SET_INPUT_VEL,4,&OdriveData,axis0,&ODSendData);
-									ODSendInputVelData(CAN2,AXIS2_ID,MSG_SET_INPUT_VEL,4,&OdriveData,axis0,&ODSendData);
+									ODSendInputVelData(CAN2,AXIS0_ID,MSG_SET_INPUT_VEL,8,&OdriveData,axis0,&ODSendData);
+									ODSendInputVelData(CAN2,AXIS2_ID,MSG_SET_INPUT_VEL,8,&OdriveData,axis0,&ODSendData);
 									#endif
 								}
 								NFC.flag++;
@@ -1990,8 +1998,8 @@ void odrivelUpdateTask(void *Parameters){
 									#endif
 									
 									#if USE_CAN2
-									ODSendInputVelData(CAN2,AXIS1_ID,MSG_SET_INPUT_VEL,4,&OdriveData,axis1,&ODSendData);
-									ODSendInputVelData(CAN2,AXIS3_ID,MSG_SET_INPUT_VEL,4,&OdriveData,axis1,&ODSendData);
+									ODSendInputVelData(CAN2,AXIS1_ID,MSG_SET_INPUT_VEL,8,&OdriveData,axis1,&ODSendData);
+									ODSendInputVelData(CAN2,AXIS3_ID,MSG_SET_INPUT_VEL,8,&OdriveData,axis1,&ODSendData);
 									#endif
 									NFC.flag = 0;
 								}

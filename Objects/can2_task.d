@@ -130,3 +130,4 @@
 .\objects\can2_task.o: .\Applications\STATE\State.h
 .\objects\can2_task.o: Applications\MyADC.h
 .\objects\can2_task.o: .\Applications\BSP_eeprom\BSP_eeprom.h
+.\objects\can2_task.o: .\Applications\REMOTE\remote.h

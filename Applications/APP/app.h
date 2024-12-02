@@ -8,18 +8,28 @@
 extern u32 CAN_ID ;
 extern u8 RxRAM0[8];
 extern u8 Rxflag1 ;
-extern u32 PocketCount,PocketCountold;//U型挡片计数
-extern u32 Pocket_A_Count,OldPocket_A_Count,NewPocket_A_Count;
+extern int PocketCount,PocketCountold;//U型挡片计数
+extern int Pocket_A_Count,OldPocket_A_Count,NewPocket_A_Count;
 
-extern u16 gCheckHeartLiveCount;
+extern u16 gCheckHeartLiveCount[21];
+extern u16 gCheckHeartOdriveCount;
 extern u16 gCheckTrailLiveCount;
 extern u16 gCheckFroCarLiveCount;
 extern u16 ChargePosition;
 extern u8 ChargeFlag;
-
-#define DriveMode  0//电机驱动类型 0--老驱动板 1--ODRIVE
+extern u8 StopAddrFlag;
+extern u8 WhyStoping;
+extern u8 SensorLD;
+#define DriveMode  1//电机驱动类型 0--老驱动板 1--ODRIVE
 #define NFCMode    0  //NFC模式   0--挡片模式  1--NFC模式
-#define TrainVersion  1  //版本号
+
+#define TrainVersion  2  //版本号
+
+//#define IAP_CAN_ID  01
+
+#define LDB  (u8)(Q_LD_B << 3 | H_LD_B<<2 | Q_LD<<1 | H_LD )
+											 
+
 void CheckCarCanCmd(void);
 void SaveData(CanRxMsg temp_CAN_Msg); 
 
@@ -29,11 +39,13 @@ void ChargeStop (void);
 void Motor_Contral(u8 Dir,u16 Speed,u8 MotorEnable);
 extern u16 testflag;
 extern u8 MotorDir;
-extern u8 LD_ONFlag;
 extern unsigned  int gCarBatPower;
-extern u32 Pocket_A_Count1,Pocket_A_Count2;
-extern u32 PocketCount1,PocketCount2;
+extern int Pocket_A_Count1,Pocket_A_Count2;
+extern int PocketCount1,PocketCount2;
 void GetCarSpeed(void);
+
+extern u8 OdriveLifeFlag;
+
 void Motor_ContralA(u16 Speed);
 void Motor_ContralB(u16 Speed); 
 void time2_init(u16 arr,u16 psc);
@@ -45,6 +57,7 @@ void Display (void);
 void LED_Tube_Choose_DisPlay1(u8 num1,u8 num2,u8 num3);
 void KeyScan(void);
 u8 LoadingStation(void);
+void IAP_APP_CAN_ReStart(CanRxMsg temp_CAN_Msg);
 //显示电量的范围
 #define CARPOWER_VUALE_MAX_FLOAT  (320)
 #define CARPOWER_VUALE_MIN_FLOAT  (220)
@@ -86,7 +99,7 @@ u8 LoadingStation(void);
 											 |(GPIO_ReadInputDataBit(GPIOC,GPIO_Pin_9))) 	
 											 
 											 
-#define SW1 PAin(0)											 
+//#define SW1 PAin(0)											 
 #define SW2 PBin(12)	
 
 #define SCLH GPIO_SetBits(GPIOB, GPIO_Pin_1)
@@ -106,18 +119,21 @@ extern float  gSpeedRB;
 extern float  gSpeedRA;
 extern float  gSpeedRD;
 extern float  gSpeedRC;
-
+extern u8 TrainStop;
 extern float gPowerValueFloat;
 extern u8 ReadSpeedFlag;
 extern u16 ReadSpeedTimerCount;
 extern u16 PositionTail;
 extern u16 powervol;
 extern int LastDeliverResultNum[21] ;
+extern int LGTimerCntBuff[21] ;
 extern unsigned short int LastPoketNum[21];
 extern u8 BasketError[24];
 extern u32 APPBasketNum;
+
 extern u32 APPSendADDRFlag;
 extern int AppSendAddr[21];
+extern unsigned short int AddrAckState[21];
 extern u32 NFCNUM,NFCNUMold,NFCNUMnew;
 extern u32 TailstockNFC;
 extern u8 HeadSendBasketFlag;
@@ -129,8 +145,9 @@ extern u16 FrontCarPositionPokec;
 extern u16 FrontCarPositionPokec1;
 extern u16 FrontCarPositionPokec2;
 extern u8 FrontCarPositionFlag;
+extern u8 FrontCarInStationCount;
 //extern u8 TrailPositionFlag;
-
+extern u16 APPSendADDRDelay;
 extern u16 CarPositionPocket;
 extern u16 CarTailNFCNum;
 extern u16 CarDistance;
@@ -148,9 +165,16 @@ extern u8 StionStop;
 extern u8 MoveOneFlag;
 extern u8 TrainApplyForExitFlag;
 extern u32 DeliverResultFlag;
+extern u32 DeliverResul2APPtBuff;
+extern u16 DeliverResultTimer[21];
 extern u8 BreakCargo;
 extern u8 CarBack;
 extern u8 CarScranFlag;
+extern u8 NowCarGoACK;
+extern u8 ChargeACK;
+extern u8 TrainRestACK;
+extern u8 BoxesDieStop;
+extern u8 TrainRestFlag;
 extern u16 IDMaxNum;
 extern u8 TrainMaxNum;
 extern u8 TrainHeadNum;
@@ -161,6 +185,7 @@ extern u8 ForceTravel2;
 extern u8 ForceTravel3;
 extern u8 ConfigrationFlag;
 extern u8 InStationFlag;
+extern u8 LDDelayFlag;
 extern u32 BasketLifeFlag ;
 extern u32 BasketReciveAddrFlag;
 extern u8 ReadDataFlag;
@@ -171,9 +196,11 @@ extern u8 MFContralZS;
 extern u8 MFContralDS;
 extern u32 AppAddrACK;
 extern u8 InStationCount;
-extern u8 InStationCount1;
+extern u8 LD_Step;
 //extern u8 DriveMode;
 ////////////////////////////设置参数///////////////////////////
+extern u8 WorkOffFlag;
+
 
 extern u16 CaseNum;
 extern u8 Pocket4;

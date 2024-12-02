@@ -119,6 +119,7 @@
 .\objects\main.o: .\Applications\STATE\State.h
 .\objects\main.o: Applications\MyADC.h
 .\objects\main.o: .\Applications\BSP_eeprom\BSP_eeprom.h
+.\objects\main.o: .\Applications\REMOTE\remote.h
 .\objects\main.o: .\Math\nav_para.h
 .\objects\main.o: .\Math\aq_math.h
 .\objects\main.o: .\Math\matrix.h

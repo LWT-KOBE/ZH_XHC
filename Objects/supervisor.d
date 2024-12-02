@@ -120,6 +120,7 @@
 .\objects\supervisor.o: .\Applications\STATE\State.h
 .\objects\supervisor.o: Applications\MyADC.h
 .\objects\supervisor.o: .\Applications\BSP_eeprom\BSP_eeprom.h
+.\objects\supervisor.o: .\Applications\REMOTE\remote.h
 .\objects\supervisor.o: .\Math\nav_para.h
 .\objects\supervisor.o: .\Math\aq_math.h
 .\objects\supervisor.o: .\Math\matrix.h

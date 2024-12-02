@@ -131,3 +131,4 @@
 .\objects\state.o: .\Applications\STATE\State.h
 .\objects\state.o: .\Applications\MyADC.h
 .\objects\state.o: .\Applications\BSP_eeprom\BSP_eeprom.h
+.\objects\state.o: .\Applications\REMOTE\remote.h
