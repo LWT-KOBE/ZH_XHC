@@ -33,6 +33,7 @@ void controlUpdateTask(void *Parameters){
 		}
 		CanSendDataTask();//CAN 与车斗通信
 		
+		//test
 //		temp[0] = 0xfa;
 //		temp[1] = 0x00;
 //		temp[2] = OdReceivedData.vel_estimate[1].u8_temp[0];
